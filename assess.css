@@ -18,7 +18,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 @charset "UTF-8";
@@ -134,9 +134,6 @@
     margin: 0;
 }
 
-/**
- * Le Xuan Anh Ver2
- */
 #page-mod-videoassessment-view.assess-page #page.container-fluid {
     max-width: none;
 }
@@ -154,7 +151,6 @@
     width: 90%;
 }
 
-/* MinhTB VERSION 2 09-03-2016 */
 #training-result-wrap {
     float: left;
     width: 73.2144%;
@@ -239,9 +235,7 @@
 #training-result-table .criterion-failed .teacher-selected, .rubric-result .criterion-failed .teacher-selected {
     display: none;
 }
-/* END MinhTB VERSION 2 09-03-2016 */
 
-/* MinhTB VERSION2 2016-05-18 */
 #fitem_id_advancedgradingbefore > .fitemtitle {
     overflow: hidden;
     float: none;
@@ -258,7 +252,6 @@
 #fitem_id_advancedgradingbefore > .felement.error > .gradingform_rubric-error {
     display: inline;
 }
-/* END MinhTB VERSION2 2016-05-18 */
 
 #training-result-table-render {
     display: none;

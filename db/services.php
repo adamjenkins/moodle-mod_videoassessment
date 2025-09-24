@@ -19,72 +19,67 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $services = array(
-    'videoassessment_pluginservice' => array(                      //the name of the web service
-        'functions' => array ('mod_videoassessment_get_getallcomments', 'mod_videoassessment_get_coursesbycategory', 'mod_videoassessment_get_sectionsbycourse', 'mod_videoassessment_upload_mobile_video', 'mod_videoassessment_assignclass_sort_group'),
-        'requiredcapability' => '',                //if set, the web service user need this capability to access
-                                                    //any function of this service. For example: 'some/capability:specified'
-        'restrictedusers' =>0,                      //if enabled, the Moodle administrator must link some user to this service
-                                                    //into the administration
-        'enabled'=>1,                               //if enabled, the service can be reachable on a default installation
-        'shortname'=>'videoassessment_service' //the short name used to refer to this service from elsewhere including when fetching a token
-    )
+    'videoassessment_pluginservice' => array(                      // the name of the web service
+        'functions' => array (
+            'mod_videoassessment_get_getallcomments',
+            'mod_videoassessment_get_coursesbycategory',
+            'mod_videoassessment_get_sectionsbycourse',
+            'mod_videoassessment_assignclass_sort_group',
+        ),
+        'requiredcapability' => '',                // if set, the web service user need this capability to access
+                                                    // any function of this service. For example: 'some/capability:specified'
+        'restrictedusers' => 0,                      // if enabled, the Moodle administrator must link some user to this service
+                                                    // into the administration
+        'enabled' => 1,                               // if enabled, the service can be reachable on a default installation
+        'shortname' => 'videoassessment_service', // the short name used to refer to this service from elsewhere including when fetching a token
+    ),
 );
 
 $functions = array(
     'mod_videoassessment_get_getallcomments' => array(
-        'classname'		=> 'mod_videoassessment_external',
-        'methodname'	=> 'get_getallcomments',
-        'classpath'		=> 'mod/videoassessment/externallib.php',
-        'description'	=> 'Returns a list of videoassessmen instances in a provided set of courses.',
-        'type'			=> 'read',
+        'classname'     => 'mod_videoassessment_external',
+        'methodname'    => 'get_getallcomments',
+        'classpath'     => 'mod/videoassessment/externallib.php',
+        'description'   => 'Returns a list of videoassessmen instances in a provided set of courses.',
+        'type'          => 'read',
         'ajax'          => true,
-        'capabilities'	=> 'mod/videoassessment:viewdiscussion',
-        'services' 		=> array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+        'capabilities'  => 'mod/videoassessment:viewcomments',
+        'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
     'mod_videoassessment_get_coursesbycategory' => array(
-        'classname'		=> 'mod_videoassessment_external',
-        'methodname'	=> 'get_coursesbycategory',
-        'classpath'		=> 'mod/videoassessment/externallib.php',
-        'description'	=> 'Returns a list of videoassessmen instances in a provided set of courses.',
-        'type'			=> 'read',
+        'classname'     => 'mod_videoassessment_external',
+        'methodname'    => 'get_coursesbycategory',
+        'classpath'     => 'mod/videoassessment/externallib.php',
+        'description'   => 'Returns a list of videoassessmen instances in a provided set of courses.',
+        'type'          => 'read',
         'ajax'          => true,
-        'capabilities'	=> 'mod/videoassessment:viewdiscussion',
-        'services' 		=> array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+        'capabilities'  => 'mod/videoassessment:fetchcourses',
+        'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
     'mod_videoassessment_get_sectionsbycourse' => array(
-        'classname'		=> 'mod_videoassessment_external',
-        'methodname'	=> 'get_sectionsbycourse',
-        'classpath'		=> 'mod/videoassessment/externallib.php',
-        'description'	=> 'Returns a list of videoassessmen instances in a provided set of courses.',
-        'type'			=> 'read',
+        'classname'     => 'mod_videoassessment_external',
+        'methodname'    => 'get_sectionsbycourse',
+        'classpath'     => 'mod/videoassessment/externallib.php',
+        'description'   => 'Returns a list of videoassessmen instances in a provided set of courses.',
+        'type'          => 'read',
         'ajax'          => true,
-        'capabilities'	=> 'mod/videoassessment:viewdiscussion',
-        'services' 		=> array(MOODLE_OFFICIAL_MOBILE_SERVICE)
-    ),
-    'mod_videoassessment_upload_mobile_video' => array(
-        'classname'		=> 'mod_videoassessment_external',
-        'methodname'	=> 'upload_mobile_video',
-        'classpath'		=> 'mod/videoassessment/externallib.php',
-        'description'	=> 'Upload videoassessmen videos.',
-        'type'			=> 'write',
-        'ajax'			=> true,
-        'capabilities'	=> 'mod/videoassessment:viewdiscussion',
-        'services'		=> array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+        'capabilities'  => 'mod/videoassessment:fetchsections',
+        'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
     'mod_videoassessment_assignclass_sort_group' => array(
-        'classname'		=> 'mod_videoassessment_external',
-        'methodname'	=> 'assignclass_sort_group',
-        'classpath'		=> 'mod/videoassessment/externallib.php',
-        'description'	=> 'Change the sort by using name,group or manually',
-        'type'			=> 'read',
-        'ajax'			=> true,
-        'capabilities'	=> 'mod/videoassessment:viewdiscussion',
-        'services'		=> array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+        'classname'     => 'mod_videoassessment_external',
+        'methodname'    => 'assignclass_sort_group',
+        'classpath'     => 'mod/videoassessment/externallib.php',
+        'description'   => 'Change the sort by using name,group or manually',
+        'type'          => 'read',
+        'ajax'          => true,
+        'capabilities'  => 'mod/videoassessment:managesorting',
+        'services'      => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
 );

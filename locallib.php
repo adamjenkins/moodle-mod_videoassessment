@@ -22,24 +22,9 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
-
-require_once($CFG->dirroot . '/mod/videoassessment/classes/function.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/grade_table.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/page.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/print_page.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/rubric.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/table_export.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/util.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/va.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/video.php');
-
-require_once($CFG->dirroot . '/mod/videoassessment/classes/form/assess.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/form/video_assoc.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/form/video_publish.php');
-require_once($CFG->dirroot . '/mod/videoassessment/classes/form/video_upload.php');

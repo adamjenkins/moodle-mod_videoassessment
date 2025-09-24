@@ -19,7 +19,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__.'/../../../config.php');
@@ -48,5 +48,5 @@ try {
 
 } catch (Exception $ex) {
     header('HTTP/1.1 403 Forbidden');
-    error_log($ex->__toString());
+    debugging($ex->__toString());
 }

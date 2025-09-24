@@ -19,12 +19,11 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require_once("../../config.php");
-require_once($CFG->dirroot.'/mod/videoassessment/locallib.php');
+require_once($CFG->dirroot . '/mod/videoassessment/locallib.php');
 
 $id = required_param('id', PARAM_INT);
 
@@ -33,15 +32,23 @@ require_login($course);
 $PAGE->set_url('/mod/videoassessment/index.php', ['id' => $id]);
 $PAGE->set_pagelayout('incourse');
 
-// // Print the header.
+$context = context_course::instance($id);
+
+// Trigger event.
+$event = \mod_videoassessment\event\course_module_instance_list_viewed::create([
+    'context' => $context,
+    'courseid' => $course->id,
+]);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
+
+// Print the header.
 $strassessment = get_string('modulename', 'videoassessment');
 $PAGE->navbar->add($strassessment);
 $PAGE->set_title($strassessment);
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($strassessment));
-
-$context = context_course::instance($id);
 
 require_capability('mod/videoassessment:view', $context);
 
@@ -51,7 +58,7 @@ if (!$videoassessments = get_all_instances_in_course('videoassessment', $course)
     die;
 }
 
-// // Configure table for displaying the list of instances.
+// Configure table for displaying the list of instances.
 $headings = [get_string('topic')];
 $align = ['left'];
 
@@ -88,13 +95,13 @@ foreach ($videoassessments as $va) {
         $class = ' class="dimmed"';
     }
     $data[] = "<a$class href=\"view.php?id=$va->coursemodule\">" .
-            format_string($va->name, true) . '</a>';
+        format_string($va->name, true) . '</a>';
 
     $table->data[] = $data;
 }
 
-// // Display the table.
+// Display the table.
 echo html_writer::table($table);
 
-// // Finish the page.
+// Finish the page.
 echo $OUTPUT->footer();

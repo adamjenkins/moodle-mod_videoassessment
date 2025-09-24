@@ -19,11 +19,11 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../../config.php');
-require_once($CFG->dirroot.'/mod/videoassessment/locallib.php');
+require_once($CFG->dirroot . '/mod/videoassessment/locallib.php');
 
 $id = required_param('id', PARAM_INT);
 $url = new moodle_url('/mod/videoassessment/videopreview.php', ['id' => $id]);
@@ -32,8 +32,9 @@ $course = $DB->get_record('course', ['id' => $cm->course]);
 require_login($cm->course, true, $cm);
 $PAGE->set_url($url);
 $context = context_module::instance($cm->id);
+require_capability('mod/videoassessment:view', $context);
 
 $PAGE->set_pagelayout('embedded');
 
-$va = new videoassess\va($context, $cm, $course);
+$va = new mod_videoassessment\va($context, $cm, $course);
 echo $va->preview_video();

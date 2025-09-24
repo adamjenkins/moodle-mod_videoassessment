@@ -14,20 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Grade item mappings for the activity.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
 declare(strict_types = 1);
 
 namespace mod_videoassessment\grades;
 
-use \core_grades\local\gradeitem\itemnumber_mapping;
-use \core_grades\local\gradeitem\advancedgrading_mapping as advanced_mapping;
+use core_grades\local\gradeitem\itemnumber_mapping;
+use core_grades\local\gradeitem\advancedgrading_mapping as advanced_mapping;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -63,7 +55,7 @@ class gradeitems implements itemnumber_mapping, advanced_mapping {
             'beforetraining',
             'beforeself',
             'beforepeer',
-            'beforeclass'
+            'beforeclass',
         ];
     }
 }

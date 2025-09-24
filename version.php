@@ -21,14 +21,14 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025040100;
+$plugin->version   = 2025092400;
 $plugin->requires  = 2011112900;
 $plugin->component = 'mod_videoassessment';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0.0 (Build: 2025040100)'; // User-friendly version number.
+$plugin->release = '1.0.0 (Build: 2025092400)'; // User-friendly version number.
 $plugin->supported = [400, 403];

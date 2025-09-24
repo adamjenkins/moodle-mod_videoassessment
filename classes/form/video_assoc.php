@@ -14,21 +14,38 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Form for ??? videos for the videoassessment module.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
-namespace videoassess\form;
+namespace mod_videoassessment\form;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Form for video association management in the videoassessment module.
+ *
+ * This form handles the association of videos with specific timing contexts
+ * and manages the relationship between videos and assessment periods.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class video_assoc extends \moodleform {
+    /**
+     * Internal form name identifier.
+     *
+     * Used to identify this specific form instance.
+     *
+     * @var string
+     */
     private $_name = 'assocform';
 
+    /**
+     * Define the form structure and elements.
+     *
+     * Creates hidden form fields for video association data including
+     * course module ID, action type, video ID, association data, and timing.
+     *
+     * @return void
+     */
     public function definition() {
         $mform = $this->_form;
 
@@ -45,7 +62,5 @@ class video_assoc extends \moodleform {
         $mform->setType('assocdata', PARAM_RAW);
         $mform->addElement('hidden', 'timing', 'before', array('id' => 'id_timing'));
         $mform->setType('timing', PARAM_ALPHA);
-
-//         $this->add_action_buttons();
     }
 }

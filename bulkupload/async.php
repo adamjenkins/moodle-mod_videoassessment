@@ -19,22 +19,27 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__.'/../../../config.php');
 
 require_once(__DIR__.'/lib.php');
-
 try {
     $cmid = required_param('cmid', PARAM_INT);
     $file = required_param('file', PARAM_FILE);
+    $token = required_param('token', PARAM_ALPHANUM);
+
+    // To avoid any unauthorized external request.
+    // Only accept internal ajax request with valid token.
+    if ($token !== md5($file . get_site_identifier())) {
+        throw new moodle_exception('invalidtoken', 'error');
+    }
 
     $bulkupload = new videoassessment_bulkupload($cmid);
-    //$bulkupload->require_capability();
     $bulkupload->convert($file);
 
 } catch (Exception $ex) {
     header('HTTP/1.1 403 Forbidden');
-    error_log($ex->__toString());
+    debugging($ex->__toString());
 }

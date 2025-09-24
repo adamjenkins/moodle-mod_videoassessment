@@ -19,7 +19,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../../../config.php');
@@ -39,14 +39,15 @@ $PAGE->requires->css('/mod/videoassessment/bulkupload/style.css');
 
 echo $OUTPUT->header();
 
-// タスク一覧リンク
+// Link to task list.
 $cm = get_coursemodule_from_id('videoassessment', $cmid);
 $context = context_module::instance($cm->id);
 $course = $DB->get_record('course', array('id' => $cm->course));
-$va = new videoassess\va($context, $cm, $course);
+$va = new mod_videoassessment\va($context, $cm, $course);
 echo $va->output->task_link($va);
 
-include __DIR__.'/droparea.html';
+echo $OUTPUT->render_from_template('mod_videoassessment/bulkupload_droparea', []);
+$PAGE->requires->js_call_amd('mod_videoassessment/bulkupload', 'init', [$cmid]);
 
 echo html_writer::tag(
     'div',

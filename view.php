@@ -22,43 +22,46 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use videoassess\va;
+use mod_videoassessment\va;
 
 require_once('../../config.php');
-require_once($CFG->dirroot.'/mod/videoassessment/locallib.php');
+require_once($CFG->dirroot . '/mod/videoassessment/locallib.php');
 
-/* MinhTB VERSION 2 03-03-2016 */
 if (optional_param('ajax', null, PARAM_ALPHANUM)) {
+    require_login();
     $action = optional_param('action', null, PARAM_ALPHANUM);
 
     if ($action == 'getcoursesbycategory') {
         $catid = optional_param('catid', null, PARAM_INT);
         $currentcourseid = optional_param('currentcourseid', 0, PARAM_INT);
         $courseopts = [];
-        $html = "";
 
         if (!empty($catid)) {
-            $courses = \videoassess\va::get_courses_managed_by($USER->id, $catid);
+            $context = context_coursecat::instance($catid);
+            require_capability('mod/videoassessment:fetchcourses', $context);
+
+            $courses = va::get_courses_managed_by($USER->id, $catid);
             array_walk($courses, function (\stdClass $a) use (&$courseopts) {
                 $courseopts[$a->id] = $a->fullname;
             });
 
-            $html = "<option value='0'>" . '('.get_string('new').')' . "</option>";
-
+            $courseoptions = [];
             foreach ($courseopts as $courseid => $coursename) {
-                $selected = '';
-
-                if ($currentcourseid == $courseid) {
-                    $selected = ' selected';
-                }
-
-                $html .= "<option value='$courseid'" . $selected . ">$coursename</option>";
+                $courseoptions[] = [
+                    'id' => $courseid,
+                    'fullname' => $coursename,
+                    'selected' => ($currentcourseid == $courseid),
+                ];
             }
         }
 
+        $templatecontext = [
+            'courses' => $courseoptions,
+        ];
+        $html = $OUTPUT->render_from_template('mod_videoassessment/course_options', $templatecontext);
         echo json_encode([
             'html' => $html,
         ]);
@@ -67,28 +70,29 @@ if (optional_param('ajax', null, PARAM_ALPHANUM)) {
         $courseid = optional_param('courseid', null, PARAM_INT);
         $currentsectionid = optional_param('currentsectionid', null, PARAM_INT);
         $sectionopts = [];
-        $html = "";
 
         if (!empty($courseid)) {
+            $context = context_course::instance($courseid);
+            require_capability('mod/videoassessment:fetchsections', $context);
+
             $modinfo = get_fast_modinfo($courseid);
             $sections = $modinfo->get_section_info_all();
 
             if (!empty($sections)) {
                 foreach ($sections as $key => $section) {
-                    $sectionopts[$section->__get('id')] = get_section_name($courseid, $section->__get('section'));
-                }
-
-                foreach ($sectionopts as $sectionid => $sectionname) {
-                    $selected = '';
-
-                    if ($currentsectionid == $sectionid) {
-                        $selected = ' selected';
-                    }
-
-                    $html .= "<option value='$sectionid'" . $selected . ">$sectionname</option>";
+                    $sectionopts[] = [
+                        'id'       => $section->id,
+                        'name'     => get_section_name($courseid, $section->section),
+                        'selected' => ($currentsectionid == $section->id),
+                    ];
                 }
             }
         }
+
+        $templatecontext = [
+            'sections' => $sectionopts,
+        ];
+        $html = $OUTPUT->render_from_template('mod_videoassessment/section_options', $templatecontext);
 
         echo json_encode([
             'html' => $html,
@@ -101,25 +105,26 @@ if (optional_param('ajax', null, PARAM_ALPHANUM)) {
         $timing = optional_param('timing', null, PARAM_RAW);
         $id = optional_param('id', null, PARAM_RAW);
         $context = context_module::instance($cmid);
+        require_capability('mod/videoassessment:viewcomments', $context);
         $va = $DB->get_record('videoassessment', ['id' => $cmid]);
 
-        $o = \html_writer::start_tag('div', ['class' => 'card  card-body']);
+        $comments = [];
         $gradertypes = ['self', 'peer', 'teacher'];
 
         foreach ($gradertypes as $gradertype) {
-            $gradingarea = $timing.$gradertype;
-            $grades = \videoassess\va::get_grade_items_byid($gradingarea, $userid, $va->id);
+            $gradingarea = $timing . $gradertype;
+            $grades = va::get_grade_items_by_id($gradingarea, $userid, $va->id);
             foreach ($grades as $item => $gradeitem) {
                 if ($gradeitem->id == $id) {
-                    $comment = '<label class="mobile-submissioncomment">'.$gradeitem->submissioncomment.'</label>';
+                    $comment = '<label class="mobile-submissioncomment">' . $gradeitem->submissioncomment . '</label>';
                     if ($gradertype == "peer") {
-                        $lable = '<span class="blue box">Peer</span>';
+                        $label = '<span class="blue box">' . get_string($gradertype, 'videoassessment') . '</span>';
                     } else if ($gradertype == "teacher") {
-                        $lable = '<span class="green box">Teacher</span>';
+                        $label = '<span class="green box">' . get_string($gradertype, 'videoassessment') . '</span>';
                     } else if ($gradertype == "self") {
-                        $lable = '<span class="red box">Self</span>';
+                        $label = '<span class="red box">' . get_string($gradertype, 'videoassessment') . '</span>';
                     }
-                    $o .= $OUTPUT->heading($lable.$comment);
+                    $o .= $OUTPUT->heading($label . $comment);
                 }
             }
 
@@ -127,13 +132,12 @@ if (optional_param('ajax', null, PARAM_ALPHANUM)) {
         $o .= \html_writer::end_tag('div');
 
         echo json_encode([
-            'html' => $o,
+            'html' => $html,
         ]);
         die;
     }
 }
-/* END MinhTB VERSION 2 03-03-2016 */
-global  $DB, $PAGE;
+global $DB, $PAGE;
 $id = required_param('id', PARAM_INT);
 $url = new moodle_url('/mod/videoassessment/view.php', ['id' => $id]);
 $ismailsent = optional_param('ismailsent', 0, PARAM_INT);
@@ -145,13 +149,23 @@ $course = $DB->get_record('course', ['id' => $cm->course]);
 require_login($cm->course, true, $cm);
 $PAGE->set_url($url);
 $PAGE->set_heading($cm->name);
-/* MinhTB VERSION 2 */
 $PAGE->requires->jquery();
-/* END */
 if ($action == "") {
     $PAGE->requires->js_call_amd('mod_videoassessment/videoassessment', 'init_message_sent_window', [$ismailsent]);
 }
 $context = context_module::instance($cm->id);
+require_capability('mod/videoassessment:view', $context);
 
-$va = new videoassess\va($context, $cm, $course);
+// Trigger standard "viewed" event.
+$videoassessment = $DB->get_record('videoassessment', ['id' => $cm->instance], '*', MUST_EXIST);
+$event = \mod_videoassessment\event\course_module_viewed::create([
+    'objectid' => $videoassessment->id,
+    'context' => $context,
+    'courseid' => $course->id,
+]);
+$event->add_record_snapshot('course', $course);
+$event->add_record_snapshot('videoassessment', $videoassessment);
+$event->trigger();
+
+$va = new mod_videoassessment\va($context, $cm, $course);
 echo $va->view($action);

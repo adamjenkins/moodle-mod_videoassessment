@@ -14,20 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Video assessment
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Restore structure step for the Video Assessment activity.
+ *
+ * Defines the restore paths and processing methods for activity data.
+ *
+ * @package   mod_videoassessment
+ * @copyright 2024 Don Hinkleman (hinkelman@mac.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class restore_videoassessment_activity_structure_step extends restore_activity_structure_step {
     /**
+     * Define the restore structure for this activity.
      *
-     * @return restore_path_element
+     * Creates restore path elements for all activity data including user data
+     * if userinfo setting is enabled.
+     *
+     * @return restore_path_element Prepared activity structure
      */
     protected function define_structure() {
         $userinfo = $this->get_setting_value('userinfo');
@@ -58,6 +63,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Process the main videoassessment activity data.
+     *
+     * Restores the core activity record and applies the new instance ID.
+     *
+     * @param array $data Activity data from backup
+     * @return void
+     */
     protected function process_videoassessment($data) {
         global $DB;
 
@@ -69,6 +82,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $this->apply_activity_instance($newitemid);
     }
 
+    /**
+     * Process video records from backup.
+     *
+     * Restores video file records and creates ID mappings for references.
+     *
+     * @param array $data Video data from backup
+     * @return void
+     */
     protected function process_videoassessment_video($data) {
         global $DB;
 
@@ -81,6 +102,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $this->set_mapping('videoassessment_video', $oldid, $newitemid);
     }
 
+    /**
+     * Process video association records from backup.
+     *
+     * Restores video-user associations with proper ID mappings.
+     *
+     * @param array $data Video association data from backup
+     * @return void
+     */
     protected function process_videoassessment_video_assoc($data) {
         global $DB;
 
@@ -94,6 +123,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $newitemid = $DB->insert_record('videoassessment_video_assocs', $data);
     }
 
+    /**
+     * Process peer relationship records from backup.
+     *
+     * Restores peer associations between users with proper ID mappings.
+     *
+     * @param array $data Peer relationship data from backup
+     * @return void
+     */
     protected function process_videoassessment_peer($data) {
         global $DB;
 
@@ -107,6 +144,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $newitemid = $DB->insert_record('videoassessment_peers', $data);
     }
 
+    /**
+     * Process grade item records from backup.
+     *
+     * Restores grade item definitions and creates ID mappings for grade references.
+     *
+     * @param array $data Grade item data from backup
+     * @return void
+     */
     protected function process_videoassessment_grade_item($data) {
         global $DB;
 
@@ -121,6 +166,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $this->set_mapping('videoassessment_grade_item', $oldid, $newitemid);
     }
 
+    /**
+     * Process grade records from backup.
+     *
+     * Restores individual grade entries with proper grade item ID mappings.
+     *
+     * @param array $data Grade data from backup
+     * @return void
+     */
     protected function process_videoassessment_grade($data) {
         global $DB;
 
@@ -133,6 +186,14 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $newitemid = $DB->insert_record('videoassessment_grades', $data);
     }
 
+    /**
+     * Process aggregated grade records from backup.
+     *
+     * Restores user grade aggregation data with proper user ID mappings.
+     *
+     * @param array $data Aggregation data from backup
+     * @return void
+     */
     protected function process_videoassessment_aggregation($data) {
         global $DB;
 
@@ -145,6 +206,13 @@ class restore_videoassessment_activity_structure_step extends restore_activity_s
         $newitemid = $DB->insert_record('videoassessment_aggregation', $data);
     }
 
+    /**
+     * Execute post-restore tasks.
+     *
+     * Adds related video files to the restored activity.
+     *
+     * @return void
+     */
     protected function after_execute() {
         $this->add_related_files('mod_videoassessment', 'video', null);
     }

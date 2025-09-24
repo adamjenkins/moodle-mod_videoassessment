@@ -14,38 +14,57 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * The videoassess namespace definition.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
-namespace videoassess;
+namespace mod_videoassessment;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Abstract base class for video assessment page controllers.
+ *
+ * This abstract class provides common functionality for all video assessment
+ * page controllers including initialization, authentication, and rendering.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class page {
     /**
+     * Video assessment instance object.
+     *
+     * Contains the main video assessment functionality and data.
      *
      * @var va
      */
     protected $va;
+
     /**
+     * Current page URL object.
+     *
+     * Stores the Moodle URL for the current page with parameters.
      *
      * @var \moodle_url
      */
     protected $url;
+
     /**
+     * Page renderer instance.
+     *
+     * Handles the rendering of page content and templates.
      *
      * @var \mod_videoassessment_renderer|\core_renderer
      */
     protected $output;
 
     /**
+     * Initialize the page controller with required parameters.
      *
-     * @param string $url
+     * Sets up authentication, course module context, and initializes
+     * the video assessment instance and page renderer.
+     *
+     * @param string $url Base URL for the page
+     * @throws \moodle_exception If course module or course not found
+     * @return void
      */
     public function __construct($url) {
         global $DB, $PAGE;
@@ -66,11 +85,23 @@ abstract class page {
         $this->output = $PAGE->get_renderer('mod_videoassessment');
     }
 
-    public abstract function execute();
+    /**
+     * Execute the main page logic.
+     *
+     * Abstract method that must be implemented by concrete page classes
+     * to define the specific functionality for each page type.
+     *
+     * @return void
+     */
+    abstract public function execute();
 
     /**
+     * Generate the page header HTML.
      *
-     * @return string
+     * Creates and returns the standard page header using the
+     * video assessment renderer.
+     *
+     * @return string HTML content for the page header
      */
     protected function header() {
         return $this->output->header($this->va);

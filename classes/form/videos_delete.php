@@ -14,27 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Form for deleting videos from the videoassessment module.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
+namespace mod_videoassessment\form;
 
-namespace videoassess\form;
-
-use \videoassess\va;
-use \videoassess\video;
+use mod_videoassessment\va;
+use mod_videoassessment\video;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Form for deleting videos from the videoassessment module.
+ *
+ * This form provides a table interface for selecting and deleting
+ * multiple video submissions with grade information display.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class videos_delete extends \moodleform {
+    /**
+     * Define the form structure and elements for video deletion.
+     *
+     * Creates a table displaying all videos with checkboxes for selection
+     * and shows grade information for each video submission.
+     *
+     * @return void
+     */
     public function definition() {
         global $DB, $OUTPUT;
 
         $mform = $this->_form;
-        /* @var $va \videoassess\va */
+        /* @var $va \mod_videoassessment\va */
         $va = $this->_customdata->va;
 
         $mform->addElement('hidden', 'action', 'publish');
@@ -49,17 +59,17 @@ class videos_delete extends \moodleform {
         $columns = array(
                 'checkbox',
                 'thumbnail',
-        		'size',
+                'size',
                 'grade',
         );
         $checkall = \html_writer::empty_tag('input', array(
-        		'type' => 'checkbox',
-        		'id' => 'all-video-check'
+                'type' => 'checkbox',
+                'id' => 'all-video-check',
         ));
         $headers = array(
                 $checkall,
                 va::str('video'),
-        		get_string('size'),
+                get_string('size'),
                 get_string('grade'),
         );
         $table->define_columns($columns);
@@ -70,9 +80,6 @@ class videos_delete extends \moodleform {
         $o = '';
         foreach ($videorecs as $videorec) {
             $video = new video($va->context, $videorec);
-            if ($video->file) {
-//                 $mform->addElement('checkbox', 'videos['.$videorec->id.']', $videorec->filename);
-            }
 
             if (empty($videorec->grade)) {
                 $videorec->grade = -1;
@@ -92,7 +99,7 @@ class videos_delete extends \moodleform {
                     if ($grade->$prop != -1) {
                         $gradecell .= va::str($timing).': '.$grade->$prop.' ';
 
-                       $videorec->grade = max($videorec->grade, $grade->$prop);
+                        $videorec->grade = max($videorec->grade, $grade->$prop);
                     }
                 }
                 $gradecell .= \html_writer::empty_tag('br');
@@ -102,11 +109,11 @@ class videos_delete extends \moodleform {
             $videorec->link = $video->render_thumbnail_with_preview();
 
             if ($video->has_file()) {
-	            $videorec->filesize = $video->file->get_filesize();
-	            $videorec->contenthash = $video->file->get_contenthash();
+                $videorec->filesize = $video->file->get_filesize();
+                $videorec->contenthash = $video->file->get_contenthash();
             } else {
-            	$videorec->filesize = 0;
-            	$videorec->contenthash = '';
+                $videorec->filesize = 0;
+                $videorec->contenthash = '';
             }
         }
 
@@ -117,9 +124,9 @@ class videos_delete extends \moodleform {
         foreach ($videorecs as $videorec) {
             $table->add_data(array(
                     \html_writer::checkbox('videos['.$videorec->id.']', 1, false, '',
-                    		array('class' => 'video-check')),
+                            array('class' => 'video-check')),
                     $videorec->link,
-            		display_size($videorec->filesize),
+                    display_size($videorec->filesize),
                     $videorec->gradecell,
             ));
         }
@@ -136,10 +143,14 @@ class videos_delete extends \moodleform {
     }
 
     /**
+     * Validate form data for video deletion.
      *
-     * @param array $data
-     * @param array $files
-     * @return array
+     * Performs basic validation on the deletion form data
+     * and returns any validation errors.
+     *
+     * @param array $data Form data to validate
+     * @param array $files Uploaded files array
+     * @return array Array of validation errors
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);

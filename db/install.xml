@@ -98,7 +98,7 @@
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="videoassessment_aggregation" COMMENT="集計済み評価">
+    <TABLE NAME="videoassessment_aggregation" COMMENT="Aggregated assessment">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="videoassessment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -126,7 +126,7 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="videoassessment_grade_items" COMMENT="評定項目">
+    <TABLE NAME="videoassessment_grade_items" COMMENT="Grade item">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="videoassessment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -140,7 +140,7 @@
         <KEY NAME="videoassessment" TYPE="foreign" FIELDS="videoassessment" REFTABLE="videoassessment" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="videoassessment_grades" COMMENT="評定データ">
+    <TABLE NAME="videoassessment_grades" COMMENT="Grade data">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="videoassessment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -156,7 +156,7 @@
         <KEY NAME="videoassessment" TYPE="foreign" FIELDS="videoassessment" REFTABLE="videoassessment" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="videoassessment_videos" COMMENT="ビデオ">
+    <TABLE NAME="videoassessment_videos" COMMENT="Video">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="videoassessment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -173,7 +173,7 @@
         <KEY NAME="videoassessment" TYPE="foreign" FIELDS="videoassessment" REFTABLE="videoassessment" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="videoassessment_video_assocs" COMMENT="ビデオ割り当て">
+    <TABLE NAME="videoassessment_video_assocs" COMMENT="Video allocation">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="videoassessment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -191,7 +191,7 @@
         <INDEX NAME="videoid" UNIQUE="false" FIELDS="videoid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="videoassessment_peers" COMMENT="ピアパートナー">
+    <TABLE NAME="videoassessment_peers" COMMENT="Peer">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="videoassessment" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>

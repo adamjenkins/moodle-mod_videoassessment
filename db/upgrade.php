@@ -22,7 +22,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die(); // phpcs:ignore
@@ -64,7 +64,7 @@ function xmldb_videoassessment_upgrade($oldversion = 0) {
 
         $mods = $DB->get_records('videoassessment');
         foreach ($mods as $mod) {
-            videoassess\va::cleanup_old_peer_grades($mod->id);
+            mod_videoassessment\va::cleanup_old_peer_grades($mod->id);
         }
 
         upgrade_mod_savepoint(true, 2013080900, 'videoassessment');
@@ -77,12 +77,12 @@ function xmldb_videoassessment_upgrade($oldversion = 0) {
         $DB->delete_records('grade_items', ['itemnumber' => 5]);
         $DB->delete_records('grade_items', ['itemnumber' => 6]);
 
-        $courses = videoassess\va::get_courses();
+        $courses = mod_videoassessment\va::get_courses();
         foreach ($courses as $course) {
-            $users = videoassess\va::get_users($course->id);
+            $users = mod_videoassessment\va::get_users($course->id);
 
             foreach ($users as $user) {
-                $grade = videoassess\va::get_grade($course->id, $user->id);
+                $grade = mod_videoassessment\va::get_grade($course->id, $user->id);
 
                 if ($grade->count > 0) {
                     $courseitem = $DB->get_record('grade_items', [
@@ -192,7 +192,6 @@ function xmldb_videoassessment_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2015061702, 'videoassessment');
     }
 
-    // Author MinhTB VERSION 2.
     // Add training field to videoassessment table.
     if ($oldversion < 2016030701) {
         // Define field traning to be added to videoassessment.
@@ -208,7 +207,6 @@ function xmldb_videoassessment_upgrade($oldversion = 0) {
         upgrade_mod_savepoint(true, 2016030701, 'videoassessment');
     }
 
-    // Author MinhTB VERSION 2.
     // Add trainingvideo, accepteddifference fields to videoassessment table.
     if ($oldversion < 2016030702) {
         // Define field traningvideo to be added to videoassessment.

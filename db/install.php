@@ -23,11 +23,18 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Install function for video assessment module.
+ *
+ * This function is called when the module is installed.
+ * It checks if the ffmpeg command exists and displays a notification.
+ *
+ * @return void
+ */
 function xmldb_videoassessment_install() {
     global $OUTPUT;
     $cmdline = '/usr/local/bin/ffmpeg -version';
@@ -39,10 +46,10 @@ function xmldb_videoassessment_install() {
     putenv('LD_LIBRARY_PATH=');
     putenv('DYLD_LIBRARY_PATH=');
     exec($cmdline, $output, $retval);
-    if($retval == 1 || empty($output)){
-        echo $OUTPUT->notification("The default installation path of ffmpeg does not exist!", 'notifyproblem');
-    }else{
-        $arr = explode("\n",$output[0]);
+    if ($retval == 1 || empty($output)) {
+        echo $OUTPUT->notification(get_string('installerrorffmpegdoesnotexist', 'videoassessment'), 'notifyproblem');
+    } else {
+        $arr = explode("\n", $output[0]);
         $ffmpegversioninfo = $arr[0];
         echo $OUTPUT->notification($ffmpegversioninfo, 'notifysuccess');
     }

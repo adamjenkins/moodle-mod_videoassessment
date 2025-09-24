@@ -14,23 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Renderer used to display special elements of the videoassessment module.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
+namespace mod_videoassessment\output;
 
-use videoassess\va;
+use plugin_renderer_base;
+use renderable;
+use mod_videoassessment\va;
 
 defined('MOODLE_INTERNAL') || die();
 
-class mod_videoassessment_renderer extends plugin_renderer_base {
+/**
+ * Main renderer for video assessment module.
+ *
+ * This renderer handles the display of video assessment elements including
+ * headers, footers, task links, video players, and status information.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class renderer extends plugin_renderer_base {
     /**
+     * Render a renderable object using appropriate method.
      *
-     * @param renderable $widget
-     * @return string
+     * Routes renderable objects to their specific render methods
+     * or falls back to the default output renderer if no specific
+     * method exists.
+     *
+     * @param renderable $widget The renderable object to render
+     * @return string HTML output of the rendered object
      */
     public function render(renderable $widget) {
         $rendermethod = 'render_'.str_replace('\\', '_', get_class($widget));
@@ -41,7 +52,13 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
     }
 
     /**
-     * @return string
+     * Generate page header with task navigation links.
+     *
+     * Creates the standard page header including the main header
+     * and task navigation links for teachers.
+     *
+     * @param va $va Video assessment instance object
+     * @return string HTML content for the page header
      */
     public function header(va $va) {
         $this->page->set_title($va->va->name);
@@ -54,15 +71,24 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
     }
 
     /**
-     * @return string
+     * Generate page footer.
+     *
+     * Returns the standard page footer HTML content.
+     *
+     * @return string HTML content for the page footer
      */
     public function footer() {
         return $this->output->footer();
     }
 
     /**
+     * Generate task navigation links for teachers.
      *
-     * @return string
+     * Creates navigation links for upload, associate, and assess tasks
+     * with highlighting for the current active task.
+     *
+     * @param va $va Video assessment instance object
+     * @return string HTML content for task navigation links
      */
     public function task_link(va $va) {
         $highlight = (object)array('upload' => null, 'associate' => null, 'assess' => null);
@@ -87,7 +113,7 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
                             get_string('associate', 'videoassessment'), null, $highlight->associate),
                     $this->output->action_link(new \moodle_url('/mod/videoassessment/view.php',
                             array('id' => $va->cm->id)),
-                            get_string('assess', 'videoassessment'), null, $highlight->assess)
+                            get_string('assess', 'videoassessment'), null, $highlight->assess),
             );
             $o .= $this->output->box(implode(get_separator(), $links));
         }
@@ -96,11 +122,15 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Render video player with appropriate format support.
      *
-     * @param videoassessment_video $video
-     * @return string
+     * Generates HTML for video playback with support for both HTML5
+     * video tags and FlowPlayer based on browser capabilities and file format.
+     *
+     * @param \mod_videoassessment\video $video Video object to render
+     * @return string HTML content for the video player
      */
-    public function render_videoassess_video(videoassess\video $video) {
+    public function render_videoassess_video(mod_videoassessment\video $video) {
         global $CFG;
 
         if ($CFG->release < 2012062500) {
@@ -111,16 +141,15 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
         if (optional_param('novideo', 0, PARAM_BOOL)) {
             return;
         }
-		if($video->data->tmpname == 'Youtube'){
-			$url = $video->data->originalname;
-		}else{
-			$url = moodle_url::make_pluginfile_url(
-					$video->context->id, 'mod_videoassessment', 'video', 0,
-					$video->file->get_filepath(), $video->file->get_filename());
-		}
+        if ($video->data->tmpname == 'Youtube') {
+            $url = $video->data->originalname;
+        } else {
+            $url = moodle_url::make_pluginfile_url(
+                    $video->context->id, 'mod_videoassessment', 'video', 0,
+                    $video->file->get_filepath(), $video->file->get_filename());
+        }
 
-
-        $url = (string)$url; // moodle_url->__toString()
+        $url = (string)$url;
         @$alt = $this->alt ?: $url;
 
         $width = !empty($video->width) ? $video->width : 400;
@@ -131,29 +160,29 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
         : '';
 
         $filter = new filter_mediaplugin($this->va->context, array());
-        if (videoassess\va::check_mp4_support()) {
-            // MP4形式をサポートするブラウザは HTML5 <video> タグ使用
-            $prev_filter_mediaplugin_enable_html5video = !empty($CFG->filter_mediaplugin_enable_html5video);
-            $CFG->filter_mediaplugin_enable_html5video = true;
+        if (mod_videoassessment\va::check_mp4_support()) {
+            // Browsers supporting the MP4 format use the HTML5 <video> tag.
+            $prevfiltermediapluginenablehtml5video = !empty($CFG->filtermediapluginenablehtml5video);
+            $CFG->filtermediapluginenablehtml5video = true;
             $html = $filter->filter('<a href="'.$url.$dim.'">'.$alt.'</a>');
-            $CFG->filter_mediaplugin_enable_html5video = $prev_filter_mediaplugin_enable_html5video;
+            $CFG->filtermediapluginenablehtml5video = $prevfiltermediapluginenablehtml5video;
             return $html;
         }
-        // それ以外のブラウザは FlowPlayer 使用
-        // (Windows では QuickTime は一般的ではないので .mp4 にも FlowPlayer を使用する)
+        // Other browsers use FlowPlayer.
+        // (Since QuickTime is not widely used on Windows, FlowPlayer is also used for .mp4 files.)
 
-        // 拡張子が .mp4 だとFLVフィルタにマッチしないので、
-        // ダミーの拡張子 .flv に付け替えてフィルタを通し、
-        // 得られたHTMLを元の拡張子に書き換える
+        // Since the .mp4 extension doesn't match the FLV filter,
+        // we replace it with the dummy .flv extension to pass through the filter,
+        // then rewrite the resulting HTML with the original extension.
         $mp4 = null;
         if (preg_match('/\.mp4$/i', $url, $m)) {
             list ($mp4) = $m;
             $url = substr_replace($url, '.flv', -4);
         }
-        $prev_filter_mediaplugin_enable_flv = !empty($CFG->filter_mediaplugin_enable_flv);
-        $CFG->filter_mediaplugin_enable_flv = true;
+        $prevfiltermediapluginenableflv = !empty($CFG->filtermediapluginenableflv);
+        $CFG->filtermediapluginenableflv = true;
         $html = $filter->filter('<a href="'.$url.$dim.'">'.$alt.'</a>');
-        $CFG->filter_mediaplugin_enable_flv = $prev_filter_mediaplugin_enable_flv;
+        $CFG->filtermediapluginenableflv = $prevfiltermediapluginenableflv;
         if ($mp4) {
             $html = preg_replace('/\.flv(?=["#])/', $mp4, $html);
         }
@@ -163,9 +192,18 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
         return $o;
     }
 
-    function render_videoassess_info_status($va){
-        $o ='';
-        if($va->allowsubmissionsfromdate != 0 || $va->duedate!=0|| $va->cutoffdate!=0){
+    /**
+     * Render video assessment status information.
+     *
+     * Displays submission dates, due dates, and cutoff information
+     * in a formatted table for users to understand assessment timing.
+     *
+     * @param va $va Video assessment instance object
+     * @return string HTML content for status information table
+     */
+    public function render_videoassess_info_status($va) {
+        $o = '';
+        if ($va->allowsubmissionsfromdate != 0 || $va->duedate != 0 || $va->cutoffdate != 0) {
             $o .= $this->output->container_start('submissionstatustable');
             $o .= $this->output->heading("Videoassess state info", 3);
             $o .= $this->output->box_start('boxaligncenter submissionsummarytable');
@@ -189,7 +227,6 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
                 } else {
                     $cell2content = format_time($duedate - $time);
                 }
-                //$cell2content = userdate($duedate);
                 $this->add_table_row_tuple($t, $cell1content, $cell2content);
 
                 if ($va->cutoffdate) {
@@ -210,8 +247,22 @@ class mod_videoassessment_renderer extends plugin_renderer_base {
             return $o;
         }
     }
+
+    /**
+     * Add a two-column row to an HTML table.
+     *
+     * Creates a table row with two cells where the first cell is
+     * treated as a header cell with optional attributes.
+     *
+     * @param html_table $table The table to add the row to
+     * @param string $first Content for the first cell
+     * @param string $second Content for the second cell
+     * @param array $firstattributes Optional attributes for the first cell
+     * @param array $secondattributes Optional attributes for the second cell
+     * @return void
+     */
     private function add_table_row_tuple(html_table $table, $first, $second, $firstattributes = [],
-                                         $secondattributes = []) {
+                                        $secondattributes = []) {
         $row = new html_table_row();
         $cell1 = new html_table_cell($first);
         $cell1->header = true;

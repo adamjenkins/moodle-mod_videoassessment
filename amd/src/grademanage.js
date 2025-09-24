@@ -16,39 +16,43 @@
 /**
  * Video assessment
  *
- * @package    mod_videoassessment
+ * @package
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/yui', 'core/str'], function ($, Y, Str) {
+define(['jquery'], function ($) {
     return {
         init_grademanage: function () {
             var hasgrades = new Array();
-            var gradetype = '';
-            $('.check-has-grade input').each(function (gradetypes) {
+            $('.check-has-grade input').each(function () {
                 if (this.value) {
                     hasgrades.push($(this).attr('text'));
                     if ($('.check-has-grade').hasClass(this.name)) {
                         var href = $('.actions .action:first-child img').attr('src');
                         if (href && href.indexOf('document-edit') > -1) {
-                            $('.actions .action:first-child').attr('href', 'javascript:void(0)');
-                            $('.actions .action:first-child').attr('disabled', 'true');
+                            $('.actions .action:first-child')
+                                .attr('href', '#')
+                                .on('click', function (e) {
+                                    e.preventDefault();
+                                })
+                                .attr('disabled', 'true');
                         }
                     }
                 }
-                if ($('.check-has-grade').hasClass(this.name)) {
-                    gradetype = this.name;
-                }
             });
 
-            $('.type_custom .item_with_icon a').each(function (gradetypes) {
+            $('.type_custom .item_with_icon a').each(function () {
                 var areaid = $(this).attr('href').split("?areaid=").pop();
-                if (jQuery.inArray(areaid, hasgrades) !== -1) {
-                    $(this).attr('href', 'javascript:void(0)');
-                    $(this).attr('disabled', 'true');
+                if ($.inArray(areaid, hasgrades) !== -1) {
+                    $(this)
+                        .attr('href', '#')
+                        .on('click', function (e) {
+                            e.preventDefault();
+                        })
+                        .attr('disabled', 'true');
                 }
             });
-            var helpbtn = $('#fgroup_id_notificationcarriergroup').next().find('.col-md-9').find('.btn.btn-link')
+            var helpbtn = $('#fgroup_id_notificationcarriergroup').next().find('.col-md-9').find('.btn.btn-link');
             helpbtn.addClass('float-sm-right');
             $('#fgroup_id_notificationcarriergroup').next().find('.col-md-3').append(helpbtn);
 
@@ -62,7 +66,7 @@ define(['jquery', 'core/yui', 'core/str'], function ($, Y, Str) {
                 M.core_formchangechecker.reset_form_dirty_state();
                 var quickSetupform = $('#id_quickSetupButton').closest('.mform');
                 var action = $('input[name="quickSetupFormUrl"]').val();
-                quickSetupform.attr('action',action);
+                quickSetupform.attr('action', action);
                 $('input[name="isquickSetup"]').val(1);
                 quickSetupform.submit();
             });

@@ -22,7 +22,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once("../../config.php");
@@ -36,8 +36,8 @@ require_once($CFG->dirroot . '/mod/videoassessment/classes/va.php');
 
 $add    = optional_param('add', '', PARAM_ALPHA);     // module name
 $update = optional_param('update', 0, PARAM_INT);
-$return = optional_param('return', 0, PARAM_BOOL);    //return to course/view.php if false or mod/modname/view.php if true
-$type   = optional_param('type', '', PARAM_ALPHANUM); //TODO: hopefully will be removed in 2.0
+$return = optional_param('return', 0, PARAM_BOOL);    // return to course/view.php if false or mod/modname/view.php if true
+$type   = optional_param('type', '', PARAM_ALPHANUM); // TODO: hopefully will be removed in 2.0
 $sectionreturn = optional_param('sr', null, PARAM_INT);
 
 $url = new moodle_url('/course/modedit.php');
@@ -55,7 +55,7 @@ if (!empty($add)) {
     $url->param('course', $course);
     $PAGE->set_url($url);
 
-    $course = $DB->get_record('course', array('id'=>$course), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $course), '*', MUST_EXIST);
     require_login($course);
 
     // There is no page for this in the navigation. The closest we'll have is the course section.
@@ -67,7 +67,7 @@ if (!empty($add)) {
     $data->return = 0;
     $data->sr = $sectionreturn;
     $data->add = $add;
-    if (!empty($type)) { //TODO: hopefully will be removed in 2.0
+    if (!empty($type)) { // TODO: hopefully will be removed in 2.0
         $data->type = $type;
     }
 
@@ -90,13 +90,13 @@ if (!empty($add)) {
     $PAGE->set_url($url);
 
     // Select the "Edit settings" from navigation.
-    navigation_node::override_active_url(new moodle_url('/course/modedit.php', array('update'=>$update, 'return'=>1)));
+    navigation_node::override_active_url(new moodle_url('/course/modedit.php', array('update' => $update, 'return' => 1)));
 
     // Check the course module exists.
     $cm = get_coursemodule_from_id('', $update, 0, false, MUST_EXIST);
 
     // Check the course exists.
-    $course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     // require_login
     require_login($course, false, $cm); // needed to setup proper $COURSE
@@ -158,15 +158,15 @@ if ($mform->is_cancelled()) {
     } else {
         print_error('invaliddata');
     }
-    $url = new moodle_url("/course/modedit.php", array('update'=>$fromform->coursemodule, 'return'=>1));
-    $isquickSetup = required_param('isquickSetup', PARAM_INT);
-    if($isquickSetup == 1){
+    $url = new moodle_url("/course/modedit.php", array('update' => $fromform->coursemodule, 'return' => 1));
+    $isquicksetup = required_param('isquickSetup', PARAM_INT);
+    if ($isquicksetup == 1) {
         $users = get_enrolled_users($context, 'mod/videoassessment:submit', 0, 'u.id');
         $userids = array_keys($users);
-        if(empty($cm)){
+        if (empty($cm)) {
             $cm = get_coursemodule_from_instance('videoassessment', $fromform->id);
         }
-        $va = new videoassess\va(context_module::instance($fromform->coursemodule), $cm, $course);
+        $va = new mod_videoassessment\va(context_module::instance($fromform->coursemodule), $cm, $course);
         $mappings = $va->get_random_peers_for_users($userids, $fromform->usedpeers);
 
         foreach ($mappings as $id => $peers) {

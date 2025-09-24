@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Form for duplication of a teacher's rubric to another from a particular instance of videoassessment.
  *
@@ -22,13 +24,18 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
 class mod_videoassessment_rubric_form_duplicate extends moodleform {
 
+    /**
+     * Define the form elements for duplication of a teacher's rubric.
+     *
+     * Sets up the form fields for duplicating a teacher's rubric
+     * including hidden fields for instance ID and context ID.
+     *
+     * @return void
+     */
     public function definition() {
 
         $dform = $this->_form;
@@ -40,47 +47,56 @@ class mod_videoassessment_rubric_form_duplicate extends moodleform {
         $dform->addElement('hidden', 'contextid');
         $dform->setType('contextid', PARAM_INT);
 
-        $firstArea = true;
+        $firstarea = true;
 
-        foreach ($areas as $areaId => $areaName) {
-            if ($firstArea) {
+        foreach ($areas as $areaid => $areaname) {
+            if ($firstarea) {
                 $label = get_string('duplicatefor', 'videoassessment');
-                $firstArea = false;
+                $firstarea = false;
             } else {
                 $label = '';
             }
 
-            $dform->addElement('checkbox', "areas[$areaId]", $label, $areaName);
+            $dform->addElement('checkbox', "areas[$areaid]", $label, $areaname);
         }
 
         $this->add_action_buttons(null, get_string('duplicaterubric', 'videoassessment'));
     }
 
+    /**
+     * Validate the form data for duplication of a teacher's rubric.
+     *
+     * Checks if the required grading areas are selected and validates
+     * the form data for proper duplication of the rubric.
+     *
+     * @param array $data Form data to validate
+     * @param array $files Form files to validate
+     * @return array Validation errors
+     */
     public function validation($data, $files) {
         global $DB;
 
         $errors = parent::validation($data, $files);
         $areas = $this->_customdata['areas'];
-        $areaIds = array_keys($areas);
+        $areaids = array_keys($areas);
 
         if (!$data['areas']) {
-            $errors['areas[' . $areaIds[0] . ']'] = get_string('pleasechoosegradingareas', 'videoassessment');
-        }
-        else {
-            $areaIds = implode(', ', array_keys($data['areas']));
-            $areaDefinitions = $DB->get_records_sql('SELECT areaid,timecreated FROM {grading_definitions} WHERE areaid IN (:areaids)', ['areaids' => $areaIds]);
-            $areasGrading = $DB->get_records('grading_areas', array('contextid' => $data['contextid']));
-            if (is_array($areasGrading)) {
-                foreach ($areasGrading as $area) {
+            $errors['areas[' . $areaids[0] . ']'] = get_string('pleasechoosegradingareas', 'videoassessment');
+        } else {
+            $areaids = implode(', ', array_keys($data['areas']));
+            $areadefinitions = $DB->get_records_sql('SELECT areaid,timecreated FROM {grading_definitions} WHERE areaid IN (:areaids)', ['areaids' => $areaids]);
+            $areasgrading = $DB->get_records('grading_areas', array('contextid' => $data['contextid']));
+            if (is_array($areasgrading)) {
+                foreach ($areasgrading as $area) {
                     if ($area->areaname == 'beforeteacher') {
-                        $areaTeacherId = $area->id;
+                        $areateacherid = $area->id;
                     }
                 }
             }
-            $gradingDefinitionTeacher = $DB->get_record('grading_definitions', array('areaid' => $areaTeacherId));
-            if (!empty($areaDefinitions) && isset($gradingDefinitionTeacher)) {
-                foreach ($areaDefinitions as $area) {
-                    if($gradingDefinitionTeacher->timecreated == $area->timecreated){
+            $gradingdefinitionteacher = $DB->get_record('grading_definitions', array('areaid' => $areateacherid));
+            if (!empty($areadefinitions) && isset($gradingdefinitionteacher)) {
+                foreach ($areadefinitions as $area) {
+                    if ($gradingdefinitionteacher->timecreated == $area->timecreated) {
                         $errors['areas[' . $area->areaid . ']'] = get_string('gradingareadefined', 'videoassessment');
                     }
                 }

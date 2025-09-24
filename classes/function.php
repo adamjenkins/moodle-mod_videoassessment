@@ -19,10 +19,10 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace videoassess;
+namespace mod_videoassessment;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,8 +33,8 @@ defined('MOODLE_INTERNAL') || die();
  * @param string|\stdClass $a
  * @return string
  */
-function str($identifier, $component = '', $a = null) {
-	debugging('str関数', DEBUG_DEVELOPER);
+function str ($identifier, $component = '', $a = null) {
+    debugging('str function', DEBUG_DEVELOPER);
     if (!$component) {
         $component = 'mod_videoassessment';
     }

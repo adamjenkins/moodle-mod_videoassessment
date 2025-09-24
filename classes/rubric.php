@@ -14,32 +14,51 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * The videoassess namespace definition.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
-namespace videoassess;
+namespace mod_videoassessment;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/grade/grading/lib.php');
 
+/**
+ * Rubric management class for video assessment grading.
+ *
+ * This class handles the management of grading managers and controllers
+ * for rubric-based assessment across different grading areas and timings.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class rubric {
     /**
+     * Collection of grading managers for different areas.
+     *
+     * Stores grading manager instances indexed by grading area names.
      *
      * @var \stdClass
      */
     private $managers;
+
     /**
+     * Collection of grading controllers for different areas.
+     *
+     * Stores grading controller instances indexed by grading area names.
      *
      * @var \stdClass
      */
     private $controllers;
 
+    /**
+     * Initialize rubric management for video assessment.
+     *
+     * Sets up grading managers and controllers for all grading areas
+     * in the video assessment, optionally filtered by specific areas.
+     *
+     * @param va $va Video assessment instance object
+     * @param array|null $gradingareas Optional array of specific grading areas to initialize
+     * @return void
+     */
     public function __construct(va $va, array $gradingareas = null) {
         $this->managers = new \stdClass();
         $this->controllers = new \stdClass();
@@ -58,9 +77,13 @@ class rubric {
     }
 
     /**
+     * Get grading manager for a specific grading area.
      *
-     * @param string $gradingarea
-     * @return \grading_manager
+     * Retrieves the grading manager instance for the specified
+     * grading area if it exists.
+     *
+     * @param string $gradingarea The grading area identifier
+     * @return \grading_manager|null Grading manager instance or null if not found
      */
     public function get_manager($gradingarea) {
         if (isset($this->managers->$gradingarea)) {
@@ -70,9 +93,13 @@ class rubric {
     }
 
     /**
+     * Get grading controller for a specific grading area.
      *
-     * @param string $gradingarea
-     * @return \gradingform_rubric_controller
+     * Retrieves the grading controller instance for the specified
+     * grading area if it exists and is configured.
+     *
+     * @param string $gradingarea The grading area identifier
+     * @return \gradingform_rubric_controller|null Grading controller instance or null if not found
      */
     public function get_controller($gradingarea) {
         if (isset($this->controllers->$gradingarea)) {
@@ -82,12 +109,17 @@ class rubric {
     }
 
     /**
+     * Get available grading controller for a specific grading area.
      *
-     * @param string $gradingarea
-     * @return \gradingform_rubric_controller
+     * Retrieves the grading controller instance only if it exists,
+     * is configured, and has an available form for grading.
+     *
+     * @param string $gradingarea The grading area identifier
+     * @return \gradingform_rubric_controller|null Available grading controller or null if not available
      */
     public function get_available_controller($gradingarea) {
-        if ($controller = $this->get_controller($gradingarea) and $controller->is_form_available()) {
+        $controller = $this->get_controller($gradingarea);
+        if ($controller && $controller->is_form_available()) {
             return $controller;
         }
         return null;

@@ -22,24 +22,29 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use videoassess\va;
+use mod_videoassessment\va;
 
 defined('MOODLE_INTERNAL') || die();
 
 // Event types.
 define('VIDEOASSESS_EVENT_TYPE_DUE', 'due');
 define('VIDEOASSESS_EVENT_TYPE_GRADINGDUE', 'gradingdue');
+
 /**
+ * Add a new video assessment instance to the database.
  *
- * @param stdClass $va
- * @param mod_videoassessment_mod_form $form
- * @return int
+ * Creates a new video assessment activity with proper configuration
+ * for assessment types, grading, and calendar events.
+ *
+ * @param stdClass $va Video assessment instance data
+ * @param mod_videoassessment_mod_form $form Form data for validation
+ * @return int The ID of the newly created video assessment instance
+ * @throws moodle_exception If database insertion fails
  */
-function videoassessment_add_instance($va, $form)
-{
+function videoassessment_add_instance($va, $form) {
     global $DB;
     if ($va->isquickSetup == 1) {
         if ($va->isselfassesstype == 1 || $va->ispeerassesstype == 1 || $va->isteacherassesstype == 1 || $va->isclassassesstype == 1) {
@@ -50,7 +55,7 @@ function videoassessment_add_instance($va, $form)
             }
             if ($va->ispeerassesstype == 1) {
                 $va->ratingpeer = $va->peerassess;
-                if($va->peerassess == 0){
+                if ($va->peerassess == 0) {
                     $va->numberofpeers = 0;
                 }
             } else {
@@ -72,30 +77,31 @@ function videoassessment_add_instance($va, $form)
             $va->usedpeers = $va->numberofpeers;
         }
         if ($va->gradingsimpledirect > 0) {
-//        $cm->completionusegrade = 1;
-//        $cm->completion = COMPLETION_TRACKING_AUTOMATIC;
-//        $DB->update_record('course_modules', $cm);
             $va->gradepass_videoassessment = $va->gradingsimpledirect;
             $va->gradepass = $va->gradingsimpledirect;
         }
     }
-    if(!isset($va->gradepass_videoassessment) || !isset($va->gradepass)){
+    if (!isset($va->gradepass_videoassessment) || !isset($va->gradepass)) {
         $va->gradepass_videoassessment = 0;
         $va->gradepass = 0;
     }
     $va->id = $DB->insert_record('videoassessment', $va);
-    update_calendar($va);
+    videoassessment_update_calendar($va);
     return $va->id;
 }
 
 /**
+ * Update an existing video assessment instance in the database.
  *
- * @param stdClass $va
- * @param mod_videoassessment_mod_form $form
- * @return boolean
+ * Modifies video assessment configuration, handles assessment type changes,
+ * and triggers regrading when necessary.
+ *
+ * @param stdClass $va Video assessment instance data
+ * @param mod_videoassessment_mod_form $form Form data for validation
+ * @return boolean True if update was successful
+ * @throws moodle_exception If database update fails
  */
-function videoassessment_update_instance($va, $form)
-{
+function videoassessment_update_instance($va, $form) {
     global $DB, $CFG;
 
     $va->id = $va->instance;
@@ -141,66 +147,65 @@ function videoassessment_update_instance($va, $form)
             $va->gradepass = 0;
         }
 
-        if($va->advancedgradingmethod_beforeteacher == 'rubric'){
+        if ($va->advancedgradingmethod_beforeteacher == 'rubric') {
             $va->advancedgradingmethod_beforeteacher = '';
         }
-        if($va->advancedgradingmethod_beforetraining == 'rubric'){
+        if ($va->advancedgradingmethod_beforetraining == 'rubric') {
             $va->advancedgradingmethod_beforetraining = '';
         }
-        if($va->advancedgradingmethod_beforepeer == 'rubric'){
+        if ($va->advancedgradingmethod_beforepeer == 'rubric') {
             $va->advancedgradingmethod_beforepeer = '';
         }
-        if($va->advancedgradingmethod_beforeclass == 'rubric'){
+        if ($va->advancedgradingmethod_beforeclass == 'rubric') {
             $va->advancedgradingmethod_beforeclass = '';
         }
-        if($va->advancedgradingmethod_beforeself == 'rubric'){
+        if ($va->advancedgradingmethod_beforeself == 'rubric') {
             $va->advancedgradingmethod_beforeself = '';
         }
-    }else{
-        if($va->ratingself > 0){
+    } else {
+        if ($va->ratingself > 0) {
             $va->selfassess = $va->ratingself;
-            $va->isselfassesstype =1;
-        }else{
+            $va->isselfassesstype = 1;
+        } else {
             $va->selfassess = 0;
             $va->isselfassesstype = 0;
         }
-        if($va->ratingpeer > 0){
+        if ($va->ratingpeer > 0) {
             $va->peerassess = $va->ratingpeer;
-            $va->ispeerassesstype =1;
-        }else{
+            $va->ispeerassesstype = 1;
+        } else {
             $va->peerassess = 0;
             $va->ispeerassesstype = 0;
         }
 
-        if($va->ratingteacher > 0){
+        if ($va->ratingteacher > 0) {
             $va->teacherassess = $va->ratingteacher;
-            $va->isteacherassesstype =1;
-        }else{
+            $va->isteacherassesstype = 1;
+        } else {
             $va->teacherassess = 0;
             $va->isteacherassesstype = 0;
         }
-        if($va->ratingclass > 0){
+        if ($va->ratingclass > 0) {
             $va->classassess = $va->ratingclass;
-            $va->isclassassesstype =1;
-        }else{
+            $va->isclassassesstype = 1;
+        } else {
             $va->classassess = 0;
             $va->isclassassesstype = 0;
         }
         $va->numberofpeers = $va->usedpeers;
     }
 
-
     $oldva = $DB->get_record('videoassessment', array('id' => $va->id));
 
     $DB->update_record('videoassessment', $va);
-    update_calendar($va);
+    videoassessment_update_calendar($va);
     if ($oldva->ratingteacher != $va->ratingteacher
         || $oldva->ratingself != $va->ratingself
         || $oldva->ratingpeer != $va->ratingpeer) {
         require_once($CFG->dirroot . '/mod/videoassessment/locallib.php');
 
         $course = $DB->get_record('course', array('id' => $va->course), '*', MUST_EXIST);
-        $vaobj = new videoassess\va(context_module::instance($cm->id), $cm, $course);
+        $vaobj = new mod_videoassessment\va(context_module::instance($cm->id), $cm, $course);
         $vaobj->regrade();
     }
 
@@ -208,12 +213,16 @@ function videoassessment_update_instance($va, $form)
 }
 
 /**
+ * Delete a video assessment instance and all associated data.
  *
- * @param int $id
- * @return boolean
+ * Removes the video assessment activity and cleans up all related
+ * database records including grades, videos, and peer assignments.
+ *
+ * @param int $id Video assessment instance ID
+ * @return boolean True if deletion was successful
+ * @throws moodle_exception If database deletion fails
  */
-function videoassessment_delete_instance($id)
-{
+function videoassessment_delete_instance($id) {
     global $DB;
 
     $DB->delete_records('videoassessment', array('id' => $id));
@@ -228,12 +237,15 @@ function videoassessment_delete_instance($id)
 }
 
 /**
+ * Check which Moodle features are supported by video assessment module.
  *
- * @param string $feature
- * @return boolean
+ * Returns feature support flags for groups, grading, completion tracking,
+ * and other Moodle core functionality.
+ *
+ * @param string $feature Feature name to check support for
+ * @return boolean|null True if supported, false if not, null if unknown
  */
-function videoassessment_supports($feature)
-{
+function videoassessment_supports($feature) {
     switch ($feature){
         case FEATURE_GROUPS:
             return true;
@@ -269,11 +281,14 @@ function videoassessment_supports($feature)
 }
 
 /**
- * @return array
+ * Get list of available grading areas for video assessment.
+ *
+ * Returns an array mapping grading area keys to their display names
+ * for use in advanced grading configuration.
+ *
+ * @return array Associative array of grading area keys and names
  */
-/* MinhTB VERSION 2 07-03-2016 */
-function videoassessment_grading_areas_list()
-{
+function videoassessment_grading_areas_list() {
     return array(
         'beforeteacher' => get_string('teacher', 'videoassessment'),
         'beforetraining' => get_string('trainingpretest', 'videoassessment'),
@@ -283,39 +298,52 @@ function videoassessment_grading_areas_list()
     );
 }
 
-/* END MinhTB VERSION 2 07-03-2016 */
-
 /**
+ * Handle file serving for video assessment module files.
  *
- * @param stdClass $course
- * @param stdClass $cm
- * @param stdClass $context
- * @param string $filearea
- * @param array $args
- * @param bool $forcedownload
+ * Serves uploaded video files and other module assets with proper
+ * security checks and capability validation.
+ *
+ * @param stdClass $course Course object
+ * @param stdClass $cm Course module object
+ * @param stdClass $context Context object
+ * @param string $filearea File area identifier
+ * @param array $args Additional file path arguments
+ * @param bool $forcedownload Force download instead of inline display
+ * @return void
+ * @throws moodle_exception If user lacks required capabilities
  */
-function mod_videoassessment_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload)
-{
+function mod_videoassessment_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
     global $CFG, $DB;
 
     $fullpath = "/{$context->id}/mod_videoassessment/$filearea/" . implode('/', $args);
 
     $fs = get_file_storage();
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
         send_file_not_found();
     }
 
-    // Self Assessment/Peer Assessment のために、他人のファイルの表示を許可する
+    // Allow Self Assessment/Peer Assessment to view other people's files.
     if (!has_capability('mod/videoassessment:gradepeer', $context)) {
         send_file_not_found();
     }
 
-    \core\session\manager::write_close(); // unlock session during fileserving
+    \core\session\manager::write_close(); // Unlock session during fileserving.
     send_stored_file($file, HOURSECS, 0, $forcedownload);
 }
 
-function videoassessment_convert_video($event, $va)
-{
+/**
+ * Convert training video files to appropriate format.
+ *
+ * Processes uploaded training videos through bulk upload system
+ * and converts them to web-compatible formats.
+ *
+ * @param stdClass $event Event object containing instance information
+ * @param stdClass $va Video assessment instance data
+ * @return void
+ * @throws moodle_exception If video conversion fails
+ */
+function videoassessment_convert_video($event, $va) {
     global $CFG, $DB, $USER;
 
     require_once($CFG->dirroot . '/mod/videoassessment/bulkupload/lib.php');
@@ -349,12 +377,15 @@ function videoassessment_convert_video($event, $va)
 }
 
 /**
- * @param int $videoassessment
- * @param array $gradetypes
- * @return array
+ * Check if video assessment has grades for specific grading areas.
+ *
+ * Verifies which grading types have been configured and have
+ * associated grade items in the database.
+ *
+ * @param int $videoassessment Video assessment instance ID
+ * @return array Associative array of grading area keys and boolean values
  */
-function videoassessment_check_has_grade($videoassessment)
-{
+function videoassessment_check_has_grade($videoassessment) {
     global $DB;
 
     $hasgrade = array();
@@ -369,11 +400,15 @@ function videoassessment_check_has_grade($videoassessment)
 }
 
 /**
- * @param int $contextid
- * @return array
+ * Get grading areas for a specific context.
+ *
+ * Retrieves all grading areas associated with a given context
+ * for advanced grading configuration.
+ *
+ * @param int $contextid Context ID to get areas for
+ * @return array Associative array of area IDs and names
  */
-function videoassessment_get_areas($contextid)
-{
+function videoassessment_get_areas($contextid) {
     global $DB;
 
     $areas = array();
@@ -389,19 +424,31 @@ function videoassessment_get_areas($contextid)
     return $areas;
 }
 
-/*
- * @param int $id
- * @return string
+/**
+ * Get grading area name by its ID.
+ *
+ * Retrieves the display name of a specific grading area
+ * for use in user interfaces.
+ *
+ * @param int $id Grading area ID
+ * @return string Area name or empty string if not found
  */
-function videoassessment_get_areaname_by_id($id)
-{
+function videoassessment_get_areaname_by_id($id) {
     global $DB;
 
     return $DB->get_field('grading_areas', 'areaname', array('id' => $id));
 }
 
-function show_intro($va)
-{
+/**
+ * Determine if video assessment intro should be displayed.
+ *
+ * Checks timing and configuration settings to determine
+ * whether the activity introduction should be visible to users.
+ *
+ * @param stdClass $va Video assessment instance data
+ * @return boolean True if intro should be shown, false otherwise
+ */
+function videoassessment_show_intro($va) {
     if ($va->showdescription ||
         time() > $va->allowsubmissionsfromdate) {
         return true;
@@ -409,8 +456,17 @@ function show_intro($va)
     return false;
 }
 
-function update_calendar($va)
-{
+/**
+ * Update calendar events for video assessment activity.
+ *
+ * Creates or updates calendar events for due dates and grading
+ * deadlines associated with the video assessment activity.
+ *
+ * @param stdClass $va Video assessment instance data
+ * @return boolean True if calendar update was successful
+ * @throws moodle_exception If calendar event creation fails
+ */
+function videoassessment_update_calendar($va) {
     global $DB, $CFG;
     require_once($CFG->dirroot . '/calendar/lib.php');
 
@@ -436,15 +492,15 @@ function update_calendar($va)
     // We need to remove the links to files as the calendar is not ready
     // to support module events with file areas.
     $intro = strip_pluginfile_content($intro);
-    if (show_intro($va)) {
+    if (videoassessment_show_intro($va)) {
         $event->description = array(
             'text' => $intro,
-            'format' => $instance->introformat
+            'format' => $instance->introformat,
         );
     } else {
         $event->description = array(
             'text' => '',
-            'format' => $instance->introformat
+            'format' => $instance->introformat,
         );
     }
 
@@ -499,17 +555,16 @@ function update_calendar($va)
 }
 
 /**
- * This function extends the settings navigation block for the site.
+ * Extend settings navigation for video assessment module.
  *
- * It is safe to rely on PAGE here as we will only ever be within the module
- * context when this is called
+ * Adds grade management interface elements to the settings navigation
+ * block for advanced grading configuration.
  *
- * @param settings_navigation $settings
- * @param navigation_node $quiznode
+ * @param settings_navigation $settings Settings navigation object
+ * @param navigation_node $videoassessmentnode Video assessment navigation node
  * @return void
  */
-function videoassessment_extend_settings_navigation($settings, navigation_node $videoassessmentnode)
-{
+function videoassessment_extend_settings_navigation($settings, navigation_node $videoassessmentnode) {
     global $PAGE;
     $areaname = '';
     if (optional_param('areaid', null, PARAM_INT)) {
@@ -536,10 +591,18 @@ function videoassessment_extend_settings_navigation($settings, navigation_node $
 
     echo "</div>";
     $PAGE->requires->jquery();
-    //$PAGE->requires->js('/mod/videoassessment/grademanage.js', true);
-	$PAGE->requires->js_call_amd('mod_videoassessment/grademanage', 'init_grademanage', array());
+    $PAGE->requires->js_call_amd('mod_videoassessment/grademanage', 'init_grademanage', array());
 
 }
+
+/**
+ * Returns a map of video assessment actions to FontAwesome icon classes.
+ *
+ * Provides icon mappings for various video assessment interface elements
+ * to maintain consistent visual design.
+ *
+ * @return array Action to icon class mapping
+ */
 function mod_videoassessment_get_fontawesome_icon_map() {
     return [
         'mod_book:chapter' => 'fa-bookmark-o',
@@ -547,6 +610,31 @@ function mod_videoassessment_get_fontawesome_icon_map() {
         'mod_book:nav_sep' => 'fa-minus',
         'mod_book:add' => 'fa-plus',
         'mod_book:nav_next' => 'fa-arrow-right',
-        'mod_book:nav_exit' => 'fa-arrow-up'
+        'mod_book:nav_exit' => 'fa-arrow-up',
     ];
+}
+
+/**
+ * Get association (userid, timing) from a stored video file.
+ *
+ * Extracts user ID and timing information from video file path
+ * structure for proper file organization and access control.
+ *
+ * @param stored_file $file Stored file object to analyze
+ * @return array|false Array with [userid, timing] if found, false otherwise
+ */
+function videoassessment_get_assoc(stored_file $file) {
+    $path = trim($file->get_filepath(), '/');
+    $parts = explode('/', $path);
+
+    if (count($parts) >= 2) {
+        $userid = (int)$parts[0];
+        $timing = $parts[1]; // 'before' or 'after'
+
+        if ($userid > 0 && in_array($timing, ['before', 'after'])) {
+            return [$userid, $timing];
+        }
+    }
+
+    return false;
 }

@@ -22,7 +22,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../../config.php');
@@ -38,7 +38,8 @@ $course = $DB->get_record('course', array('id' => $cm->course));
 require_login($cm->course, true, $cm);
 $PAGE->set_url($url);
 $context = context_module::instance($cm->id);
+require_capability('mod/videoassessment:exportownsubmission', $context);
 
-$va = new videoassess\va($context, $cm, $course);
-$pp = new videoassess\print_page($va);
+$va = new mod_videoassessment\va($context, $cm, $course);
+$pp = new mod_videoassessment\print_page($va);
 $pp->do_action();

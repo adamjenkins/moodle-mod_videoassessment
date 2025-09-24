@@ -16,26 +16,25 @@
 /**
  * Video assessment
  *
- * @package    mod_videoassessment
+ * @package
+ * @module     mod_videoassessment/publish
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/yui', 'core/str', 'mod_videoassessment/ajaxcalls'], function ($, Y, Str, Ajaxcalls) {
+define(['jquery'], function ($) {
     return {
         mobilepublishvideo: function () {
-            $('#publish-category').change(function() {
+            $('#publish-category').change(function () {
                 var catid = $(this).val();
-                var url = $(this).closest('form').attr('action');
                 var currentcourseid = $('#publish-course').val();
                 var ajaxx = require("mod_videoassessment/ajaxcalls");
                 var ajaxgcbc = new ajaxx();
                 ajaxgcbc.getcoursesbycategory("getcoursesbycategory", catid, currentcourseid);
             }).change();
 
-            $('#publish-course').change(function() {
+            $('#publish-course').change(function () {
                 var courseid = $(this).val();
-                var url = $(this).closest('form').attr('action');
                 var currentsectionid = $('#publish-section').val();
 
                 if (courseid != 0) {
@@ -53,7 +52,7 @@ define(['jquery', 'core/yui', 'core/str', 'mod_videoassessment/ajaxcalls'], func
                 }
             }).change();
 
-            $(document).on('change', '.video-check', function() {
+            $(document).on('change', '.video-check', function () {
                 var check = $(this).prop('checked');
                 var count = $('#video-count').val();
 
@@ -66,7 +65,7 @@ define(['jquery', 'core/yui', 'core/str', 'mod_videoassessment/ajaxcalls'], func
                 $('#video-count').val(count);
             });
 
-            $(document).on('change', '#all-video-check', function() {
+            $(document).on('change', '#all-video-check', function () {
                 var check = $(this).prop('checked');
                 var count;
 

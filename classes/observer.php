@@ -14,18 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Event observers used in forum.
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Event observer for mod_forum.
  */
 class mod_videoassessment_observer {
 
@@ -47,6 +43,12 @@ class mod_videoassessment_observer {
         }
     }
 
+    /**
+     * Observer for \core\event\course_module_updated event.
+     *
+     * @param \core\event\course_module_updated $event
+     * @return void
+     */
     public static function course_module_updated(\core\event\course_module_updated $event) {
         global $CFG;
 

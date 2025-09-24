@@ -14,36 +14,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Form for publishing videos for the videoassessment module.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
+namespace mod_videoassessment\form;
 
-namespace videoassess\form;
-
-use \videoassess\va;
-use \videoassess\video;
+use mod_videoassessment\va;
+use mod_videoassessment\video;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Form for publishing videos for the videoassessment module.
+ *
+ * This form handles the publication of video assessments to new or existing
+ * courses, allowing teachers to share video content across different contexts.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class video_publish extends \moodleform {
     /**
+     * Define the form structure and elements for video publishing.
      *
-     * @global \stdClass $CFG
-     * @global \moodle_database $DB
-     * @global \core_renderer $OUTPUT
-     * @global \moodle_page $PAGE
-     * @global \stdClass $USER
+     * Creates course selection options, video table display, and form elements
+     * for publishing video assessments to other courses or creating new ones.
+     *
+     * @return void
      */
     public function definition() {
         global $CFG, $DB, $OUTPUT, $PAGE, $USER;
-        //require_once($CFG->libdir . '/coursecatlib.php');
 
         $mform = $this->_form;
-        /* @var $va \videoassess\va */
         $va = $this->_customdata->va;
 
         $mform->addElement('hidden', 'action', 'publish');
@@ -53,17 +53,15 @@ class video_publish extends \moodleform {
 
         $courseopts = array();
         $categories = \core_course_category::make_categories_list('moodle/course:create');
-        /* MinhTB VERSION 2 03-03-2016 */
 
         $sectionopts = array();
         $sectionopts[0] = '';
         if (!empty($categories)) {
-            //$mform->addElement('static', 'courseor', get_string('or', 'videoassessment'));
             $mform->addElement('select', 'category', get_string('category'), $categories, array('id' => 'publish-category', 'style' => 'min-width: 270px'));
             if (!empty($categories)) {
                 $courseopts[0] = '('.get_string('new').')';
             }
-            $courses = \videoassess\va::get_courses_managed_by($USER->id);
+            $courses = \mod_videoassessment\va::get_courses_managed_by($USER->id);
             array_walk($courses, function (\stdClass $a) use (&$courseopts, &$sectionopts) {
                 $courseopts[$a->id] = $a->fullname;
 
@@ -76,41 +74,38 @@ class video_publish extends \moodleform {
             });
             $mform->addElement('select', 'course', get_string('existingcourseornewcourse', 'videoassessment'), $courseopts, array(
                 'class' => 'input-select',
-                'id' => 'publish-course'
+                'id' => 'publish-course',
             ));
             $mform->addHelpButton('course', 'existingcourse', 'videoassessment');
             $mform->addElement('select', 'section', get_string('insertintosection', 'videoassessment'), $sectionopts, array(
                 'disabled' => 'disabled',
                 'class' => 'input-select',
-                'id' => 'publish-section'
+                'id' => 'publish-section',
             ));
             $mform->addElement('text', 'fullname', get_string('fullnamecourse', 'videoassessment'), array(
                 'class' => 'input-select',
-                'id' => 'publish-fullname'
+                'id' => 'publish-fullname',
             ));
             $mform->setType('fullname', PARAM_TEXT);
             $mform->addElement('text', 'shortname', get_string('shortnamecourse', 'videoassessment'), array(
                 'class' => 'input-select',
-                'id' => 'publish-shortname'
+                'id' => 'publish-shortname',
             ));
             $mform->setType('shortname', PARAM_TEXT);
             $mform->addElement('text', 'prefix', get_string('addprefixtolabel', 'videoassessment'), array(
                 'class' => 'input-select',
-                'id' => 'publish-prefix'
+                'id' => 'publish-prefix',
             ));
             $mform->setType('prefix', PARAM_TEXT);
             $mform->addElement('text', 'suffix', get_string('addsuffixtolabel', 'videoassessment'), array(
                 'class' => 'input-select',
-                'id' => 'publish-suffix'
+                'id' => 'publish-suffix',
             ));
             $mform->setType('suffix', PARAM_TEXT);
-            /* MinhTB VERSION 2 07-03-2016 */
             $mform->addElement('hidden', 'video_count', 0, array('id' => 'video-count'));
             $mform->setType('video_count', PARAM_INT);
-            /* END MinhTB VERSION 2 07-03-2016 */
 
         }
-        /* END MinhTB VERSION 2 03-03-2016 */
         ob_start();
         $table = new \flexible_table('video-publish');
         $table->set_attribute('class', 'generaltable');
@@ -118,20 +113,20 @@ class video_publish extends \moodleform {
         $columns = array(
                 'checkbox',
                 'thumbnail',
-        		'name',
-        		'size',
-                'grade'
+                'name',
+                'size',
+                'grade',
         );
         $checkall = \html_writer::empty_tag('input', array(
-        		'type' => 'checkbox',
-        		'id' => 'all-video-check'
+                'type' => 'checkbox',
+                'id' => 'all-video-check',
         ));
         $headers = array(
                 $checkall,
                 va::str('video'),
-        		va::str('originalname'),
-        		get_string('size'),
-                get_string('grade')
+                va::str('originalname'),
+                get_string('size'),
+                get_string('grade'),
         );
         $table->define_columns($columns);
         $table->define_headers($headers);
@@ -156,32 +151,31 @@ class video_publish extends \moodleform {
                 }
                 $grade = $va->get_aggregated_grades($assoc->associationid);
                 $timing = $assoc->timing;
-				$prop = 'grade' . $timing;
-				if ($grade->$prop != -1) {
-					$gradecell .= va::str('score') . ': ' . $grade->$prop . ' ';
+                $prop = 'grade' . $timing;
+                if ($grade->$prop != -1) {
+                    $gradecell .= va::str('score') . ': ' . $grade->$prop . ' ';
 
-					$videorec->grade = max($videorec->grade, $grade->$prop);
-				}
-				$gradecell .= \html_writer::empty_tag('br');
+                    $videorec->grade = max($videorec->grade, $grade->$prop);
+                }
+                $gradecell .= \html_writer::empty_tag('br');
             }
             $videorec->gradecell = $gradecell;
 
             $videorec->link = $video->render_thumbnail_with_preview();
 
             if ($video->has_file()) {
-            	$videorec->filesize = $video->file->get_filesize();
-            	$videorec->contenthash = $video->file->get_contenthash();
+                $videorec->filesize = $video->file->get_filesize();
+                $videorec->contenthash = $video->file->get_contenthash();
             } else {
-            	$videorec->filesize = 0;
-            	$videorec->contenthash = '';
+                $videorec->filesize = 0;
+                $videorec->contenthash = '';
             }
         }
 
         uasort($videorecs, function (\stdClass $a, \stdClass $b) {
-        	return $b->grade - $a->grade;
+            return $b->grade - $a->grade;
         });
 
-        /* MinhTB VERSION 2 07-03-2016 */
         $videos = array_keys($this->_customdata->videos);
 
         foreach ($videorecs as $videorec) {
@@ -193,14 +187,13 @@ class video_publish extends \moodleform {
 
             $table->add_data(array(
                     \html_writer::checkbox('videos['.$videorec->id.']', 1, $checked, '',
-                    		array('class' => 'video-check')),
+                            array('class' => 'video-check')),
                     $videorec->link,
-            		$videorec->originalname,
-            		display_size($videorec->filesize),
-                    $videorec->gradecell
+                    $videorec->originalname,
+                    display_size($videorec->filesize),
+                    $videorec->gradecell,
             ));
         }
-        /* END MinhTB VERSION 2 07-03-2016 */
 
         $table->finish_output();
         $o .= ob_get_contents();
@@ -213,10 +206,14 @@ class video_publish extends \moodleform {
     }
 
     /**
+     * Validate form data for video publishing requirements.
      *
-     * @param array $data
-     * @param array $files
-     * @return array
+     * Ensures required fields are filled and validates course creation
+     * parameters including course name uniqueness.
+     *
+     * @param array $data Form data to validate
+     * @param array $files Uploaded files array
+     * @return array Array of validation errors
      */
     public function validation($data, $files) {
         global $DB;

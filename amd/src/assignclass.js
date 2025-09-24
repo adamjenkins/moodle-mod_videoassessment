@@ -16,26 +16,29 @@
 /**
  * Video assessment
  *
- * @package    mod_videoassessment
+ * @package
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/yui', 'core/str', 'mod_videoassessment/ajaxcalls'], function ($, Y, Str, Ajaxcalls) {
+define(['jquery'], function ($) {
     return {
         assignclassSortByGroup: function () {
-            $(document).ready(function(){
+            $(document).ready(function () {
                 var sort = $('#sortby').val();
                 var groupid = $('#separate-group').val();
 
                 var id = $('.sort-form input[type="hidden"][name="id"]').val();
-                var url = $('.sort-form').attr('action');
-                $('#separate-group').after('<div class="loading-icon"><i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom"></i></div>');
+                // var url = $('.sort-form').attr('action');
+                var loadingIcon = '<div class="loading-icon">' +
+                    '<i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom"></i>' +
+                    '</div>';
+                $('#separate-group').after(loadingIcon);
                 var ajaxx = require("mod_videoassessment/ajaxcalls");
                 var ajaxacsg = new ajaxx();
                 ajaxacsg.assignclasssortgroup("assignclasssortgroup", sort, groupid, id);
             });
             /* Load sort manually list */
-            $('#sortby').change(function() {
+            $('#sortby').change(function () {
                 var t = $(this);
                 var sort = $('#sortby').val();
                 var groupid = $('#separate-group').val();
@@ -47,7 +50,10 @@ define(['jquery', 'core/yui', 'core/str', 'mod_videoassessment/ajaxcalls'], func
                     $('#manually-list').removeClass('hidden');
                 } else {
                     var id = t.closest('form').find('input[type="hidden"][name="id"]').val();
-                    $('#separate-group').after('<div class="loading-icon"><i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom"></i></div>');
+                    var loadingIcon = '<div class="loading-icon">' +
+                        '<i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom"></i>' +
+                        '</div>';
+                    $('#separate-group').after(loadingIcon);
                     var ajaxx = require("mod_videoassessment/ajaxcalls");
                     var ajaxacsg = new ajaxx();
                     ajaxacsg.assignclasssortgroup("assignclasssortgroup", sort, groupid, id);
@@ -57,7 +63,7 @@ define(['jquery', 'core/yui', 'core/str', 'mod_videoassessment/ajaxcalls'], func
                 }
             });
 
-            $('#separate-group').change(function() {
+            $('#separate-group').change(function () {
                 var url = $(this).closest('form').attr('action');
                 var id = $(this).closest('form').find('input[type="hidden"][name="id"]').val();
                 var groupid = $(this).val();

@@ -22,7 +22,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
@@ -46,7 +46,21 @@ if ($ADMIN->fulltree) {
         );
 
     if (!class_exists('admin_setting_configtext_ffmpegcommand')) {
+        /**
+         * Custom admin setting for validating ffmpeg command.
+         *
+         * Validates the ffmpeg command to ensure it contains the required placeholders
+         * for input and output file paths.
+         */
         class admin_setting_configtext_ffmpegcommand extends admin_setting_configtext {
+            /**
+             * Validate the ffmpeg command.
+             *
+             * Checks if the command contains the required placeholders for input and output file paths.
+             *
+             * @param string $data The ffmpeg command to validate
+             * @return string|true True if validation passes, error message string if fails
+             */
             public function validate($data) {
                 if (strpos($data, '{INPUT}') <= stripos($data, 'ffmpeg') ||
                     strpos($data, '{OUTPUT}') <= stripos($data, 'ffmpeg')) {

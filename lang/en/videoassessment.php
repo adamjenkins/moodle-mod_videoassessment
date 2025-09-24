@@ -19,7 +19,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -74,7 +74,7 @@ $string['delayedteachergrade'] = 'Delayed Teacher Grade';
 $string['delayedteachergrade_help'] = 'If enabled ‘yes’, the teacher assessment ratings will not be shown to the student, until he/she has completed his/her self assessment. This will alleviate any bias in student scoring by not seeing a teacher score before they start assessing.';
 $string['deleteselectedvideos'] = 'Delete selected videos';
 $string['deletevideo'] = 'Delete video';
-$string['deletevideos'] = 'Bulk Video Deletion'; // 英和辞典でもen.wiktionaryでもdeleteに一般的な名詞用例は載ってないが、deleteを名詞的に使っている用例はいくらでもあるし視認性がいいからbulk video deleteとする分には歓迎。ただここでは原則的な名詞形にしておく
+$string['deletevideos'] = 'Bulk Video Deletion';
 $string['deletevideos_help'] = 'A teacher can delete multiple files this way.';
 $string['deletevideos_videos'] = 'Videos';
 $string['deletevideos_videos_help'] = 'All selected videos are deleted from the activity. Video data on the server will be cleaned up by Moodle cron.';
@@ -177,9 +177,12 @@ $string['upload'] = 'Upload video';
 $string['uploadedat'] = 'Uploaded at';
 $string['uploadedtime'] = 'Uploaded time';
 $string['uploadingvideo'] = 'Uploading video';
+$string['uploadingvideonotice'] = 'Uploading... please wait a few minutes';
 $string['uploadvideo'] = 'Upload a video';
 $string['uploadvideo_help'] = 'Here a teacher can click a link and upload a single video file. The file should contain the performance of one student. Record the video of each performance separately. During video upload the file is compressed to 10% of the original size.';
 $string['uploadvideos'] = 'Upload videos';
+$string['startrecoding'] = 'Start Recording';
+$string['pause'] = 'Pause';
 $string['usedpeers'] = 'Number of Peer Assessments';
 $string['usedpeers_help'] = 'A teacher can set the number of peer assessments from 0 to 3. In the Ratings menu, the teacher can then assign the peer automatically or manually.The default is always “0” peers, except when a percentage for peer assessment is assigned to above 0%. Then the default becomes “1” and can be manually re-set from 1-3.';
 $string['video'] = 'Video';
@@ -202,9 +205,6 @@ $string['viewassociatedvideos'] = 'View associated videos';
 $string['weighting'] = 'Weighting';
 $string['xfeedback'] = '{$a} feedback';
 $string['xunassignedstudents'] = '{$a} unassigned students';
-/**
- * Le Xuan Anh Version2
- */
 $string['grade'] = 'Grading';
 $string['grade_help'] = 'This section is for settings that combine the self/peer/class/teacher grades. One combined grade will be uploaded to the Gradebook in this class. Scoring details can be analyzed and downloaded in Excel format by going to the Assess page and finding the download link. In addition, this section has settings for pre-calibration and fairness bonus to improve self assessment.';
 $string['managevideo'] = 'Manage videos';
@@ -216,8 +216,7 @@ $string['duplicaterubric'] = 'Duplicate Rubric';
 $string['duplicaterubric_help'] = 'This feature will repeat the rubric that has been created for the teacher, and duplicate the rubric into the assessments of self, peer, and class modes.';
 $string['duplicatesuccess'] = 'Duplicate Success';
 $string['duplicateerrors'] = 'Duplicate Errors';
-
-/* MinhTB VERSION 2 */
+$string['readyforuse'] = 'Ready for use';
 $string['allparticipants'] = 'All participants';
 $string['assignclass'] = 'Assign class';
 $string['assignclass_help'] = 'This feature allows a teacher to turn on or turn off the “Class” mode of assessment. The “Class” mode is for all the students watching a live, real-time performance to assess the speaker without a recording. This is more difficult to assess accurately, due to the time pressure, but it gives students practice in using and understanding the rubric, and keeps them learning actively instead of half-listening to a presentation. Students must log into the class website and find the appropriate Video Assessment activity on their course. They search for the student doing the performance and begin choosing the scores on each scale. The scores of all students are averaged for one single “Class” score for the whole class, thus mitigating too high or too low scores.';
@@ -259,8 +258,6 @@ $string['gradingareadefined'] = 'Can not duplicated because rubric is already ex
 $string['duplicatefor'] = 'Duplicate for';
 $string['teacherassesstraining'] = 'Assess training pre-test';
 $string['notattempted'] = 'Not attempted';
-
-/* TienNV VERSION 2 */
 $string['trainingvideo'] = 'Training video';
 $string['trainingvideo_help'] = 'Upload a video for the students to practice and complete scoring on the training Pre-test.';
 $string['accepteddifference'] = 'Accepted difference in scores';
@@ -297,7 +294,7 @@ $string['selffairnessbonus'] = '+SelfFairness<br>bonus';
 $string['finalscore'] = 'Final score';
 $string['reminder_notifition_mail_cron'] = 'reminder notifition mail cron';
 $string['uploadfile'] = 'Upload Video File';
-$string['upoladmessage'] = 'Your video file is over 500MB. Please retake the video at a lower resolution or re-upload a smaller file';
+$string['uploadmessage'] = 'Your video file is over 500MB. Please retake the video at a lower resolution or re-upload a smaller file';
 
 $string['managevideos'] = 'Manage videos';
 $string['managevideos_help'] = 'The “Manage Videos” admin page has nine functions to click. You do not have to touch any function unless you wish to change the default settings.
@@ -310,6 +307,13 @@ $string['managevideos_help'] = 'The “Manage Videos” admin page has nine func
 <br />g. Publish Videos
 <br />h. Assign Class
 <br />i.  Duplicate Rubric';
+$string['notsupportedbrowser'] = 'This browser is not supported';
+$string['dropvideofileshere'] = 'Drop video files here';
+$string['uploadfilename'] = 'Filename';
+$string['uploadfilesize'] = 'Size';
+$string['uploadmimetype'] = 'Type';
+$string['uploadstatus'] = 'Status';
+$string['uploadprogress'] = 'Progress';
 $string['notifications_help'] = 'Notifications send the assessment information to the students via their email inboxes or their mobile quickmail addresses. There are four kinds of notificiations:
 <br />a. Teacher Comment notification
 <br />b. Peer Comment notification
@@ -370,6 +374,89 @@ $string['calendargradingdue'] = '{$a} is due to be graded';
 $string['assignmentisdue'] = 'videoassessment is due';
 $string['latesubmissionsaccepted'] = 'Allowed until {$a}';
 $string['nomoresubmissionsaccepted'] = 'Only allowed for participants who have been granted an extension';
+$string['markasreadonnotificationyes'] = 'Notifications are marked as read automatically.';
+$string['markasreadonnotificationno'] = 'Notifications are not marked as read automatically.';
+
+$string['installerrorffmpegdoesnotexist'] = 'The default installation path of ffmpeg does not exist!';
+
+$string['timemarked'] = 'Time marked';
+
+$string['generalcomments'] = 'General Comments';
+$string['notificationmessagesent'] = 'Notification Message sent';
+
+$string['bonuspercentage'] = 'Bonus Percentage';
+$string['ontopoftotal'] = 'On top of total';
+$string['within'] = 'within';
+$string['ofteacherscore'] = 'of teacher score = ';
+$string['offairnessbonus'] = 'of Fairness bonus';
+$string['errorovermaximumpossiblegrade'] = 'The grade to pass can not be greater than the maximum possible grade 100';
+$string['gradecategory'] = 'Grade Category';
+$string['registeredemail'] = 'registered email';
+$string['mobilequickmail'] = 'Mobile Quickmail';
+$string['teachernotificationtemplate'] = 'Dear [[student name]],
+Good work! I just checked your presentation video and made some
+scores and comments. Here they are:
+[[insert assignment name]] [[insert current date]]
+Here is a link to this report: [[insert link to student page to view assessment]]
+You can redo your presentation on June 7th and get a better grade.
+Send an email to me if you have a question [[teacher email address]]
+Best regards,
+[[teacher name]]';
+$string['teachercomentnotificationlabel'] = 'Teacher Comment notification';
+$string['whentosendnotification'] = 'When to send notifiction';
+$string['firstassessmentbyteacher'] = 'First assessment by teacher';
+$string['additionalassessmentbyteacher'] = 'Additional assessment by teacher';
+$string['whatinfomationtosend'] = 'What information to send';
+$string['whatinfomationtosendcontents'] = '<div class="max-with">[[student name]]<br/>[[VA assignment name]]<br/>[[current date]]<br/>[[link to view whole assessment report]]->view Report<br/>[[teacher email address]]<br/>[[teacher name]]</div>';
+$string['templatetextfornotification'] = 'Template text for notification';
+$string['peertnotificationtemplate'] = 'Dear [[student name]],
+Good work! One of your classmates just checked your presentation
+video and made some scores and comments. Here they are:
+[[insert assignment name]] [[insert current date]]
+Here is a link to this report: [[insert link to student page to view assessment]]
+**your classmates will get a bonus if they score you fairly**
+Send an email to me if you have a question [[teacher email address]]
+Best regards,
+[[teacher name]]';
+$string['peercomentnotificationlabel'] = 'Peer Comment notification';
+$string['firstassessmentbystudent'] = 'First assessment by student';
+$string['remindernotificationtemplate'] = 'Dear [[student name]],
+Have you watched and checked your presentation?
+Its due date is/was on June x. Here is a link:
+[[insert link to self-assessment page]]
+Be sure to write at least 3 comments as well as scores.
+Send an email to your me if you have a question [[teacher email
+address]]. Thanks!
+Best regards,
+[[teacher name]]';
+$string['remindernotification'] = 'Reminder Notification';
+$string['beforeduedate'] = 'before due date';
+$string['daysbefore'] = 'days before';
+$string['onduedate'] = 'on due date';
+$string['afterduedateevery'] = 'after due date, every';
+$string['onvideouploaded'] = 'on video uploaded';
+$string['onselfassessment'] = 'on self assessment';
+$string['onselfassessmentwithcomments'] = 'on self assessment with 20 words of comments';
+$string['onpeerassessment'] = 'on peer assessment';
+$string['videonotificationtemplate'] = 'Dear [[teacher name]],
+[[student name]] has just uploaded a video file.
+To view it and assess it, please go to: [[insert link to self-assessment page]]
+Best regards,
+https://moodle.sgu.ac.jp';
+$string['videouploadnotificationlabel'] = 'Video upload/reupload notification';
+$string['videouploadforthefirsttime'] = 'when the student uploads a video for first time';
+$string['whenevervideoupload'] = 'whenever a student re-uploads a video';
+$string['typeofassessment'] = 'Types of assessment';
+$string['numberofpeers'] = 'Number of peers';
+$string['maximumpoints'] = 'maximum points';
+$string['simpledirectgroup'] = 'Grading - simple direct';
+
+$string['errornovideorecord'] = 'Please add a video record first';
+
+$string['videoassessmentnotfound'] = 'Video assessment not found';
+$string['submission'] = 'Submission';
+$string['invalidid'] = 'Invalid ID';
+$string['coursemisconf'] = 'Course setting is incorrect.';
 
 /* privacy:metadata */
 $string['privacy:metadata:videoassessment'] = 'Information about the videoassessment files.';

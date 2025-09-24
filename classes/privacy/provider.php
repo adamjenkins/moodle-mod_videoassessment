@@ -14,33 +14,41 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy Subsystem implementation for mod_videoassessment.
- *
- * @package    mod_videoassessment
- * @copyright
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace mod_videoassessment\privacy;
-
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\data_provider;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\writer;
+use context_module;
 
-
+/**
+ * Privacy Subsystem implementation for mod_videoassessment.
+ *
+ * @package     mod_videoassessment
+ * @copyright   2024 Don Hinkleman (hinkelman@mac.com)
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class provider implements
-    // This plugin has data.
     \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\data_provider
-{
+    \core_privacy\local\request\core_data_provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\plugin\provider {
 
-
+    /**
+     * Returns metadata about the plugin's database tables and how user data is stored.
+     *
+     * This informs Moodle's privacy subsystem about what user data is stored and where.
+     *
+     * @param collection $collection The metadata collection to populate.
+     * @return collection Updated metadata collection.
+     */
     public static function get_metadata(collection $collection): collection {
-        //Some description about the table data
+        // Some description about the table data
         $collection->add_database_table('videoassessment', [
             'course' => 'privacy:metadata:videoassessment:course',
             'name' => 'privacy:metadata:videoassessment:name',
@@ -75,7 +83,7 @@ class provider implements
         ], 'privacy:metadata:videoassessment_grade_items');
 
         $collection->add_database_table('videoassessment_peers', [
-            'videoassessment ' => 'privacy:metadata:videoassessment_peers:videoassessment ',
+            'videoassessment' => 'privacy:metadata:videoassessment_peers:videoassessment',
             'userid' => 'privacy:metadata:videoassessment_peers:userid',
             'peerid' => 'privacy:metadata:videoassessment_peers:peerid',
         ], 'privacy:metadata:videoassessment_peers');
@@ -106,49 +114,85 @@ class provider implements
             'timemodified' => 'privacy:metadata:videoassessment_video_assocs:timemodified',
         ], 'privacy:metadata:videoassessment_video_assocs');
 
-
         return $collection;
     }
+    /**
+     * Returns a list of contexts where the specified user has data.
+     *
+     * Used by the privacy API to determine where a user's data resides within this plugin.
+     *
+     * @param int $userid The ID of the user.
+     * @return contextlist List of contexts that contain user data.
+     */
+    public static function get_contexts_for_userid(int $userid): contextlist {
+        global $DB;
 
-
-    public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
-        $contextlist = new \core_privacy\local\request\contextlist();
+        $contextlist = new contextlist();
 
         $params = [
-            'modname'       => 'videoassessment',
-            'contextlevel'  => CONTEXT_MODULE,
-            'userid'        => $userid,
+            'modname' => 'videoassessment',
+            'contextlevel' => CONTEXT_MODULE,
+            'userid1' => $userid,
+            'userid2' => $userid,
+            'userid3' => $userid,
+            'userid4' => $userid,
         ];
 
-        // videoassessment_aggregation  creators.
-        $sql = "SELECT c.id
-                  FROM {context} c
-                  JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
-                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {videoassessment} vv ON vv.id = cm.instance
-                  JOIN {videoassessment_aggregation} va ON va.videoassessment = vv.id
-                 WHERE va.userid = :userid
-        ";
+        // Check if user has any data
+        $aggregationcount = $DB->count_records('videoassessment_aggregation', ['userid' => $userid]);
+        $peerscount = $DB->count_records('videoassessment_peers', ['userid' => $userid]);
+        $sortcount = $DB->count_records('videoassessment_sort_order', ['userid' => $userid]);
+        $gradeitemscount = $DB->count_records('videoassessment_grade_items', ['gradeduser' => $userid]);
+
+        // Only proceed if user has data
+        if ($aggregationcount == 0 && $peerscount == 0 && $sortcount == 0 && $gradeitemscount == 0) {
+            return $contextlist;
+        }
+
+        $sql = "SELECT DISTINCT c.id
+                FROM {context} c
+                JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+                JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+                JOIN {videoassessment} va ON va.id = cm.instance
+                WHERE va.id IN (
+                    SELECT DISTINCT videoassessment FROM {videoassessment_aggregation} WHERE userid = :userid1
+                    UNION
+                    SELECT DISTINCT videoassessment FROM {videoassessment_peers} WHERE userid = :userid2
+                    UNION
+                    SELECT DISTINCT sortitemid FROM {videoassessment_sort_order} WHERE userid = :userid3
+                    UNION
+                    SELECT DISTINCT videoassessment FROM {videoassessment_grade_items} WHERE gradeduser = :userid4
+                )";
+
         $contextlist->add_from_sql($sql, $params);
+        return $contextlist;
     }
 
+    /**
+     * Adds user IDs to the userlist for the given context.
+     *
+     * Identifies all users who have data within the given context.
+     *
+     * @param userlist $userlist List of users for a particular context.
+     * @return void
+     */
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
 
-        if (!is_a($context, \context_module::class)) {
+        if (!is_a($context, context_module::class)) {
             return;
         }
 
         $params = [
-            'instanceid'    => $context->instanceid,
-            'modulename'    => 'videoassessment',
+            'instanceid' => $context->instanceid,
+            'modulename' => 'videoassessment',
         ];
 
         // videoassessment_aggregation authors.
         $sql = "SELECT va.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {videoassessment} vv ON vv.course = cm.course
+                  JOIN {videoassessment} vv ON vv.id = cm.instance
                   JOIN {videoassessment_aggregation} va ON va.videoassessment = vv.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
@@ -157,7 +201,7 @@ class provider implements
         $sql = "SELECT va.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {videoassessment} vv ON vv.course = cm.course
+                  JOIN {videoassessment} vv ON vv.id = cm.instance
                   JOIN {videoassessment_peers} va ON va.videoassessment = vv.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
@@ -166,43 +210,123 @@ class provider implements
         $sql = "SELECT va.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {videoassessment} vv ON vv.course = cm.course
+                  JOIN {videoassessment} vv ON vv.id = cm.instance
                   JOIN {videoassessment_sort_order} va ON va.sortitemid = vv.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
-	}
+
+        // videoassessment_grade_items gradeduser
+        $sql = "SELECT gi.gradeduser as userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {videoassessment} vv ON vv.id = cm.instance
+                  JOIN {videoassessment_grade_items} gi ON gi.videoassessment = vv.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+    }
 
     /**
-     * Export all user preferences for the plugin.
+     * Exports all user data for the specified user across all approved contexts.
      *
-     * @param   int         $userid The userid of the user whose data is to be exported.
+     * Used when a user requests a copy of their personal data.
+     *
+     * @param approved_contextlist $contextlist The contexts and user whose data will be exported.
+     * @return void
      */
-    public static function export_user_preferences(int $userid) {
-        $markasreadonnotification = get_user_preference('markasreadonnotification', null, $userid);
-        if (null !== $markasreadonnotification) {
-            switch ($markasreadonnotification) {
-                case 0:
-                    $markasreadonnotificationdescription = get_string('markasreadonnotificationno', 'mod_videoassessment');
-                    break;
-                case 1:
-                default:
-                    $markasreadonnotificationdescription = get_string('markasreadonnotificationyes', 'mod_videoassessment');
-                    break;
+    public static function export_user_data(approved_contextlist $contextlist) {
+        global $DB;
+
+        $user = $contextlist->get_user();
+
+        foreach ($contextlist->get_contexts() as $context) {
+            if (!$context instanceof context_module) {
+                continue;
             }
-            writer::export_user_preference('mod_videoassessment', 'markasreadonnotification', $markasreadonnotification, $markasreadonnotificationdescription);
+
+            $cm = get_coursemodule_from_id('videoassessment', $context->instanceid);
+            if (!$cm) {
+                continue;
+            }
+
+            $videoassessmentid = $cm->instance;
+
+            // Export aggregation data
+            $aggregations = $DB->get_records('videoassessment_aggregation', [
+                'videoassessment' => $videoassessmentid,
+                'userid' => $user->id,
+            ]);
+
+            if ($aggregations) {
+                writer::with_context($context)->export_data([
+                    get_string('pluginname', 'mod_videoassessment'),
+                    'aggregations',
+                ], (object) ['aggregations' => array_values($aggregations)]);
+            }
+
+            // Export peers data
+            $peers = $DB->get_records('videoassessment_peers', [
+                'videoassessment' => $videoassessmentid,
+                'userid' => $user->id,
+            ]);
+
+            if ($peers) {
+                writer::with_context($context)->export_data([
+                    get_string('pluginname', 'mod_videoassessment'),
+                    'peers',
+                ], (object) ['peers' => array_values($peers)]);
+            }
+
+            // Export sort order data
+            $sortorders = $DB->get_records('videoassessment_sort_order', ['userid' => $user->id]);
+
+            if ($sortorders) {
+                writer::with_context($context)->export_data([
+                    get_string('pluginname', 'mod_videoassessment'),
+                    'sort_orders',
+                ], (object) ['sort_orders' => array_values($sortorders)]);
+            }
+
+            // Export grade items data
+            $gradeitems = $DB->get_records('videoassessment_grade_items', [
+                'videoassessment' => $videoassessmentid,
+                'gradeduser' => $user->id,
+            ]);
+
+            if ($gradeitems) {
+                writer::with_context($context)->export_data([
+                    get_string('pluginname', 'mod_videoassessment'),
+                    'grade_items',
+                ], (object) ['grade_items' => array_values($gradeitems)]);
+            }
+
+            // Export grade items data
+            $videoassocs = $DB->get_records('videoassessment_video_assocs', [
+                'videoassessment' => $videoassessmentid,
+                'associationid' => $user->id,
+            ]);
+
+            if ($videoassocs) {
+                writer::with_context($context)->export_data([
+                    get_string('pluginname', 'mod_videoassessment'),
+                    'video_assocs',
+                ], (object) ['video_assocs' => array_values($videoassocs)]);
+            }
         }
     }
 
     /**
-     * Delete all data for all users in the specified context.
+     * Deletes all user data for all users in a given context.
      *
-     * @param   context                 $context   The specific context to delete data for.
+     * Typically called when an activity/module is being deleted.
+     *
+     * @param \context $context The context to delete data for.
+     * @return void
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
 
         // Check that this is a context_module.
-        if (!$context instanceof \context_module) {
+        if (!$context instanceof context_module) {
             return;
         }
 
@@ -211,63 +335,80 @@ class provider implements
             return;
         }
 
-        $userid = $cm->instance;
+        $videoassessmentid = $cm->instance;
 
-        $DB->delete_records('videoassessment_aggregation', ['userid' => $userid]);
-        $DB->delete_records('videoassessment_peers', ['userid' => $userid]);
-        $DB->delete_records('videoassessment_sort_order', ['userid' => $userid]);
-
+        $DB->delete_records('videoassessment_aggregation', ['videoassessment' => $videoassessmentid]);
+        $DB->delete_records('videoassessment_peers', ['videoassessment' => $videoassessmentid]);
+        $DB->delete_records('videoassessment_sort_order', ['sortitemid' => $videoassessmentid]);
+        $DB->delete_records('videoassessment_grades', ['videoassessment' => $videoassessmentid]);
+        $DB->delete_records('videoassessment_grade_items', ['videoassessment' => $videoassessmentid]);
+        $DB->delete_records('videoassessment_videos', ['videoassessment' => $videoassessmentid]);
+        $DB->delete_records('videoassessment_video_assocs', ['videoassessment' => $videoassessmentid]);
 
     }
 
     /**
-     * Delete all user data for the specified user, in the specified contexts.
+     * Deletes all user data for a specific user in the provided contexts.
      *
-     * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
+     * Used when a user requests deletion of their data.
+     *
+     * @param approved_contextlist $contextlist Contexts and user ID to delete data for.
+     * @return void
      */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
-        $user = $contextlist->get_user();
-        $userid = $user->id;
-        foreach ($contextlist as $context) {
+        $userid = $contextlist->get_user()->id;
+
+        foreach ($contextlist->get_contexts() as $context) {
+            if (!$context instanceof context_module) {
+                continue;
+            }
             // Get the course module.
-            $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
-            $videoassessment_id = $DB->get_record('videoassessment', ['course' => $cm->instance]);
+            $cm = get_coursemodule_from_id('videoassessment', $context->instanceid);
+            if (!$cm) {
+                continue;
+            }
+            $videoassessmentid = $cm->instance;
 
-            //$DB->delete_records('videoassessment', ['id' => $videoassessment_id->id]);
-            $DB->delete_records('videoassessment_grades', ['videoassessment' => $videoassessment_id->id]);
-            $DB->delete_records('videoassessment_grade_items', ['videoassessment' => $videoassessment_id->id]);
-            $DB->delete_records('videoassessment_peers', ['videoassessment' => $videoassessment_id->id]);
-            $DB->delete_records('videoassessment_videos', ['videoassessment' => $videoassessment_id->id]);
-            $DB->delete_records('videoassessment_video_assocs', ['videoassessment' => $videoassessment_id->id]);
-
+            $DB->delete_records('videoassessment_aggregation', ['videoassessment' => $videoassessmentid, 'userid' => $userid]);
+            $DB->delete_records('videoassessment_peers', ['videoassessment' => $videoassessmentid, 'userid' => $userid]);
+            $DB->delete_records('videoassessment_sort_order', ['userid' => $userid]);
+            $DB->delete_records('videoassessment_grade_items', ['videoassessment' => $videoassessmentid, 'gradeduser' => $userid]);
+            $DB->delete_records('videoassessment_video_assocs', ['videoassessment' => $videoassessmentid, 'associationid' => $userid]);
         }
     }
 
     /**
-     * Delete multiple users within a single context.
+     * Deletes all user data for a list of users in a given context.
      *
-     * @param   approved_userlist       $userlist The approved context and user information to delete information for.
+     * Used for bulk deletion of user data, such as when multiple users leave a course.
+     *
+     * @param approved_userlist $userlist List of users and context to delete data for.
+     * @return void
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
 
         $context = $userlist->get_context();
-        $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
-        $videoassessment_id = $DB->get_record('videoassessment', ['id' => $cm->instance]);
+        if (!$context instanceof context_module) {
+            return;
+        }
+        $cm = get_coursemodule_from_id('videoassessment', $context->instanceid);
+        if (!$cm) {
+            return;
+        }
+        $videoassessmentid = $cm->instance;
 
         list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
-        $params = array_merge(['videoassessment' => $videoassessment_id->id], $userinparams);
-        $sql = "videoassessment = :videoassessment AND userid {$userinsql}";
-        $sql2 = "userid {$userinsql}";
+        $params = array_merge(['videoassessment' => $videoassessmentid], $userinparams);
+        $params2 = $userinparams;
 
-        $DB->delete_records_select('videoassessment_aggregation', $sql, $params);
-        $DB->delete_records_select('videoassessment_peers', $sql, $params);
-        $DB->delete_records_select('videoassessment_sort_order', $sql2, $params);
+        $DB->delete_records_select('videoassessment_aggregation', "videoassessment = :videoassessment AND userid $userinsql", $params);
+        $DB->delete_records_select('videoassessment_peers', "videoassessment = :videoassessment AND userid $userinsql", $params);
+        $DB->delete_records_select('videoassessment_sort_order', "userid $userinsql", $params2);
+        $DB->delete_records_select('videoassessment_grades', "videoassessment = :videoassessment AND gradeitem $userinsql", $params);
+        $DB->delete_records_select('videoassessment_grade_items', "videoassessment = :videoassessment AND gradeduser $userinsql", $params);
+        $DB->delete_records_select('videoassessment_video_assocs', "videoassessment = :videoassessment AND associationid $userinsql", $params);
 
     }
-
-
-
-
 }

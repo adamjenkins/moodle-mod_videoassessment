@@ -23,7 +23,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 @charset "UTF-8";
@@ -118,7 +118,7 @@
 #page-mod-videoassessment-submissions.dir-rtl .mform.optionspref .fitem .fitemtitle {text-align:left;}
 #page-mod-videoassessment-type-uploadsingle-upload.dir-rtl .mdl-left {text-align:right;}
 
-/* before/after両方のルーブリックが揃っていないときのエラーを隠す */
+/* Hide errors when both before and after rubrics are not present. */
 #page-mod-videoassessment-submissions .gradingform .error { display: none }
 
 .mod-videoassessment-download-link {text-align:right;}
@@ -200,11 +200,6 @@
     border: 1px solid #EEE;
     margin: 3px 0;
 }
-/*
-.path-mod-videoassessment .yui3-widget-hd {
-    cursor: move;
-}
-*/
 
 .path-mod-videoassessment td {
     font-size: 90%;
@@ -214,7 +209,7 @@
     background-color: black;
 }
 
-/* ルーブリック */
+/* Rubric */
 .path-mod-videoassessment .report-rubrics table {
     margin: auto;
 }
@@ -258,28 +253,20 @@
 .gradingform_rubric .criteria {
     height: auto !important;
 }
-.path-mod-videoassessment .gradingform_rubric .criterion .description {
-    /*width: auto;*/
-}
 
-/* ビデオ選択フォーム */
+/* Video Selection Form */
 .path-mod-videoassessment #videohdr .felement {
     clear: both;
     margin: 0;
     width: 100%;
 }
 
-/**
- * Le Xuan Anh Version2
- */
 .path-mod-videoassessment .managelink {
     font-size: 14px;
     line-height: 20px;
     display: block;
-    /*font-weight: bold;*/
     margin-bottom: 5px;
     margin-left: 20px;
-    /*text-align: right;*/
     color: #333;
 }
 
@@ -296,7 +283,6 @@
     display: none !important;
 }
 
-/* MinhTB VERSION 2 */
 .path-mod-videoassessment .id_order_students, #manually-list {
     padding: 0;
     margin: 0;

@@ -19,15 +19,15 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once('../../../config.php');
-require_once($CFG->libdir.'/tablelib.php');
-require_once($CFG->dirroot.'/mod/videoassessment/bulkupload/lib.php');
-require_once($CFG->dirroot.'/filter/mediaplugin/filter.php');
+require_once($CFG->libdir . '/tablelib.php');
+require_once($CFG->dirroot . '/mod/videoassessment/bulkupload/lib.php');
+require_once($CFG->dirroot . '/filter/mediaplugin/filter.php');
 
 $cmid = required_param('cmid', PARAM_INT);
 $cm = $DB->get_record('course_modules', array('id' => $cmid));
@@ -37,19 +37,20 @@ $bulkupload->require_capability();
 
 $baseurl = '/mod/videoassessment/bulkupload/view.php';
 $PAGE->set_url($baseurl, array('cmid' => $cmid));
-$titlestr = get_string('videoassessment:associated', 'videoassessment');
+$titlestr = get_string('associated', 'videoassessment');
 $PAGE->set_title($titlestr);
 $PAGE->set_heading($titlestr);
 $PAGE->navbar->add($titlestr);
 
-$PAGE->requires->js('/mod/videoassessment/videoassessment.js');
-$PAGE->requires->js_init_call('M.mod_videoassessment.init_video_preview', array($cmid), false, videoassessment_get_js_module());
-$PAGE->requires->js_init_call('M.mod_videoassessment.assoc_init', null, false, videoassessment_get_js_module());
+$PAGE->requires->js_call_amd('mod_videoassessment/videoassessment', 'initVideoPreview', [$cmid]);
 
 $files = $bulkupload->get_files();
-uasort($files, function($a, $b) { return strnatcasecmp($a->get_filename(), $b->get_filename()); });
+uasort($files, function ($a, $b) {
+    return strnatcasecmp($a->get_filename(), $b->get_filename());
+});
 
 if ($disassociate = optional_param_array('disassociate', null, PARAM_ALPHA)) {
+    require_sesskey();
     foreach ($disassociate as $key => $label) {
         if (isset($files[$key])) {
             $bulkupload->move_file($files[$key], '/', true);
@@ -70,8 +71,9 @@ $groupmode = groups_get_activity_groupmode($cm);
 $currentgroup = groups_get_activity_group($cm, true);
 groups_print_activity_menu($cm, new moodle_url($baseurl, array('cmid' => $cm->id)));
 
-echo '<form action="'.$CFG->wwwroot.$baseurl.'" method="post">'
-    .'<input type="hidden" name="cmid" value="'.$cmid.'"/>';
+echo '<form action="' . $CFG->wwwroot . $baseurl . '" method="post">'
+    . '<input type="hidden" name="sesskey" value="' . sesskey() . '"/>'
+    . '<input type="hidden" name="cmid" value="' . $cmid . '"/>';
 
 $table = new flexible_table('assoc-users');
 $table->define_baseurl($baseurl);
@@ -82,7 +84,7 @@ $headers = array(
     get_string('user'),
     get_string('timing', 'videoassessment'),
     get_string('size'),
-    get_string('action')
+    get_string('action'),
 );
 $table->define_columns($columns);
 $table->define_headers($headers);
@@ -94,30 +96,45 @@ $groupusers = get_enrolled_users($context, '', $currentgroup);
 
 $timingopts = array(
     'before' => get_string('before', 'videoassessment'),
-    'after' => get_string('after', 'videoassessment')
-    );
+    'after' => get_string('after', 'videoassessment'),
+);
 
-$totalsize = array_reduce($files,
-    function ($sum, $file) { return $sum + (float)$file->get_filesize(); },
-    0);
+$totalsize = array_reduce(
+    $files,
+    function ($sum, $file) {
+        return $sum + (float) $file->get_filesize();
+    },
+    0
+);
 
 /* @var $file stored_file */
 foreach ($files as $key => $file) {
-    if (list ($userid, $timing) = videoassessment_get_assoc($file)) {
-        if (!isset($groupusers[$userid]))
-            continue; // グループ絞り込み
+    if (list($userid, $timing) = videoassessment_get_assoc($file)) {
+        if (!isset($groupusers[$userid])) {
+            continue; // Filter groups.
+        }
 
-        $thumbnailfilename = preg_replace('/\.[^.]+$/',
-            videoassessment_bulkupload::THUMBNAIL_FORMAT, $file->get_filename());
+        $thumbnailfilename = preg_replace(
+            '/\.[^.]+$/',
+            videoassessment_bulkupload::THUMBNAIL_FORMAT,
+            $file->get_filename()
+        );
         $thumbnailurl = moodle_url::make_pluginfile_url(
-            $file->get_contextid(), 'mod_videoassessment', 'video', 0,
-            $file->get_filepath(), $thumbnailfilename);
+            $file->get_contextid(),
+            'mod_videoassessment',
+            'video',
+            0,
+            $file->get_filepath(),
+            $thumbnailfilename
+        );
         $table->add_data(
             array(
                 html_writer::tag(
-                    'a', sprintf('<img src="%s" />', $thumbnailurl), array(
+                    'a',
+                    sprintf('<img src="%s" />', $thumbnailurl),
+                    array(
                         'href' => 'javascript:void(0)',
-                        'onclick' => 'M.mod_videoassessment.assoc_preview_video(\''.$key.'\')'
+                        'onclick' => 'M.mod_videoassessment.assoc_preview_video(\'' . $key . '\')',
                     )
                 ),
                 userdate($file->get_timemodified()),
@@ -125,12 +142,13 @@ foreach ($files as $key => $file) {
                 $timingopts[$timing],
                 display_size($file->get_filesize()),
                 html_writer::empty_tag(
-                    'input', array(
+                    'input',
+                    array(
                         'type' => 'submit',
-                        'name' => 'disassociate['.$key.']',
-                        'value' => get_string('disassociate', 'videoassessment')
+                        'name' => 'disassociate[' . $key . ']',
+                        'value' => get_string('disassociate', 'videoassessment'),
                     )
-                )
+                ),
             )
         );
     }
@@ -149,7 +167,7 @@ echo html_writer::tag(
     $OUTPUT->action_link(
         new moodle_url('/mod/videoassessment/view.php', array('id' => $cmid)),
         '&raquo; ' . get_string('videoassessment:view', 'videoassessment')
-        )
-    );
+    )
+);
 
 echo $OUTPUT->footer();

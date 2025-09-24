@@ -14,31 +14,58 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Form for sorting videos for the videoassessment module.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
+namespace mod_videoassessment\form;
 
-namespace videoassess\form;
-
-use \videoassess\va;
+use mod_videoassessment\va;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Form for sorting videos for the videoassessment module.
+ *
+ * This form provides sorting options for video submissions including
+ * ID-based, name-based, and manual sorting methods.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class assign_class extends \moodleform {
 
-    CONST SORT_ID = 1;
-    CONST SORT_NAME = 2;
-    CONST SORT_MANUALLY = 3;
+    /**
+     * Sort videos by ID.
+     *
+     * @var int
+     */
+    const SORT_ID = 1;
 
+    /**
+     * Sort videos by name.
+     *
+     * @var int
+     */
+    const SORT_NAME = 2;
+
+    /**
+     * Sort videos manually.
+     *
+     * @var int
+     */
+    const SORT_MANUALLY = 3;
+
+    /**
+     * Define the form structure and elements.
+     *
+     * Creates sorting options and group selection elements
+     * for organizing video submissions.
+     *
+     * @return void
+     */
     public function definition() {
         global $DB, $OUTPUT;
 
         $mform = $this->_form;
-        /* @var $va \videoassess\va */
+        /* @var $va \mod_videoassessment\va */
         $va = $this->_customdata->va;
 
         $attrs = $mform->getAttributes();
@@ -47,22 +74,22 @@ class assign_class extends \moodleform {
         $mform->addElement('hidden', 'id', $va->cm->id);
         $mform->setType('id', PARAM_INT);
 
-        $sort_options = array(
+        $sortoptions = array(
             self::SORT_ID => get_string('sortid', 'videoassessment'),
             self::SORT_NAME => get_string('sortname', 'videoassessment'),
-            self::SORT_MANUALLY => get_string('sortmanually', 'videoassessment')
+            self::SORT_MANUALLY => get_string('sortmanually', 'videoassessment'),
         );
-        $mform->addElement('select', 'sortby', get_string('sortby', 'videoassessment'), $sort_options, array('id' => 'sortby', 'data-load' => 0));
+        $mform->addElement('select', 'sortby', get_string('sortby', 'videoassessment'), $sortoptions, array('id' => 'sortby', 'data-load' => 0));
         $mform->setType('sortby', PARAM_INT);
         $mform->setDefault('sortby', $this->_customdata->sortby);
 
-        $group_options = array(
-            0 => get_string('allparticipants', 'videoassessment')
+        $groupoptions = array(
+            0 => get_string('allparticipants', 'videoassessment'),
         );
         foreach ($this->_customdata->groups as $k => $group) {
-            $group_options[$k] = $group->name;
+            $groupoptions[$k] = $group->name;
         }
-        $mform->addElement('select', 'groupid', get_string('groupsseparate', 'group'), $group_options, array('id' => 'separate-group'));
+        $mform->addElement('select', 'groupid', get_string('groupsseparate', 'group'), $groupoptions, array('id' => 'separate-group'));
         $mform->setType('groupid', PARAM_INT);
         $mform->setDefault('groupid', $this->_customdata->groupid);
 
@@ -70,10 +97,14 @@ class assign_class extends \moodleform {
     }
 
     /**
+     * Validate form data for sorting options.
      *
-     * @param array $data
-     * @param array $files
-     * @return array
+     * Performs basic validation on the sorting form data
+     * and returns any validation errors.
+     *
+     * @param array $data Form data to validate
+     * @param array $files Uploaded files array
+     * @return array Array of validation errors
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);

@@ -14,20 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Video assessment
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Backup structure step for the Video Assessment activity.
+ *
+ * Defines the nested elements and data sources for activity backup.
+ *
+ * @package   mod_videoassessment
+ * @copyright 2024 Don Hinkleman (hinkelman@mac.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class backup_videoassessment_activity_structure_step extends backup_activity_structure_step {
     /**
+     * Define the backup structure for this activity.
      *
-     * @return backup_nested_element
+     * Creates the root and child elements and maps their data sources
+     * and file annotations depending on userinfo setting.
+     *
+     * @return backup_nested_element Root element prepared for backup
      */
     protected function define_structure() {
 
@@ -37,7 +42,7 @@ class backup_videoassessment_activity_structure_step extends backup_activity_str
                 'name', 'intro', 'introformat', 'maxbytes', 'timedue', 'timeavailable',
                 'grade', 'timemodified', 'ratingteacher', 'ratingself', 'ratingpeer',
                 'usedpeers', 'beforelabel', 'afterlabel', 'delayedteachergrade',
-                'allowstudentupload'
+                'allowstudentupload',
         ));
         $va->set_source_table('videoassessment', array('id' => backup::VAR_ACTIVITYID));
 

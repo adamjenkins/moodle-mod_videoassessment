@@ -22,30 +22,45 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
-use videoassess\va;
+use mod_videoassessment\va;
 
 use core_grades\component_gradeitems;
 
 /**
+ * Settings form for the videoassessment module.
+ *
+ * Provides comprehensive configuration interface for video assessment activities
+ * including grading, notifications, training materials, and assessment types.
+ *
  * @see moodleform_mod
  */
-class mod_videoassessment_mod_form extends moodleform_mod
-{
+class mod_videoassessment_mod_form extends moodleform_mod {
 
+    /** @var int Maximum number of peers allowed for assessment */
     const MAX_USED_PEERS_LIMIT = 3;
+
+    /** @var int Default number of peers for assessment */
     const DEFAULT_USED_PEERS = 1;
 
+    /** @var object|null Video assessment instance data */
     protected $_videoassessmentinstance = null;
 
-    public function definition()
-    {
+    /**
+     * Define the form elements for video assessment configuration.
+     *
+     * Creates comprehensive form interface including general settings,
+     * availability dates, grading options, and notification preferences.
+     *
+     * @return void
+     */
+    public function definition() {
         global $CFG, $DB, $PAGE;
         $cm = $PAGE->cm;
 
@@ -54,7 +69,7 @@ class mod_videoassessment_mod_form extends moodleform_mod
         $mform->setType('quickSetupFormUrl', PARAM_RAW);
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('videoassessmentname', 'videoassessment'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('videoassessmentname', 'videoassessment'), ['size' => '64']);
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
@@ -68,71 +83,90 @@ class mod_videoassessment_mod_form extends moodleform_mod
         $mform->setDefault('allowstudentupload', 1);
         $mform->addHelpButton('allowstudentupload', 'allowstudentupload', 'videoassessment');
 
-        $this->addQuickSetupElement();
+        $this->add_quick_setup_element();
 
         $mform->addElement('header', 'availability', get_string('availability', 'assign'));
         $mform->setExpanded('availability', false);
 
         $name = get_string('allowsubmissionsfromdate', 'assign');
-        $options = array('optional' => true);
+        $options = ['optional' => true];
         $mform->addElement('date_time_selector', 'allowsubmissionsfromdate', $name, $options);
         $mform->addHelpButton('allowsubmissionsfromdate', 'allowsubmissionsfromdate', 'assign');
 
         $name = get_string('duedate', 'assign');
-        $mform->addElement('date_time_selector', 'duedate', $name, array('optional' => true));
+        $mform->addElement('date_time_selector', 'duedate', $name, ['optional' => true]);
         $mform->addHelpButton('duedate', 'duedate', 'assign');
 
         $name = get_string('cutoffdate', 'assign');
-        $mform->addElement('date_time_selector', 'cutoffdate', $name, array('optional' => true));
+        $mform->addElement('date_time_selector', 'cutoffdate', $name, ['optional' => true]);
         $mform->addHelpButton('cutoffdate', 'cutoffdate', 'assign');
 
         $name = get_string('gradingduedate', 'assign');
-        $mform->addElement('date_time_selector', 'gradingduedate', $name, array('optional' => true));
+        $mform->addElement('date_time_selector', 'gradingduedate', $name, ['optional' => true]);
         $mform->addHelpButton('gradingduedate', 'gradingduedate', 'assign');
 
-        /**
-         * @author Le Xuan Anh Version2
-         */
-        $this->manageVideo();
+        $this->manage_video();
 
-
-        $this->addNotifications();
+        $this->add_notifications();
 
         $this->standard_grading_coursemodule_elements_to_grading('grading');
-        //---
 
-        $mform->addElement('radio', 'class', get_string('classgrading', 'videoassessment'), get_string('open', 'videoassessment'), 1);
+        $mform->addElement(
+            'radio',
+            'class',
+            get_string('classgrading', 'videoassessment'),
+            get_string('open', 'videoassessment'),
+            1
+        );
         $mform->addHelpButton('class', 'classgrading', 'videoassessment');
         $mform->addElement('radio', 'class', null, get_string('close', 'videoassessment'), 0);
         $mform->setType('class', PARAM_INT);
         $mform->setDefault('class', 0);
-
-        /* MinhTB VERSION 2 07-03-2016 */
-//        foreach (array('teacher', 'self', 'peer', 'class', 'training') as $gradingtype) {
-//            if (empty($this->current->{'advancedgradingmethod_before' . $gradingtype})) {
-//                $this->current->{'advancedgradingmethod_before' . $gradingtype} = 'rubric';
-//            }
-//        }
-        /* END MinhTB VERSION 2 07-03-2016 */
-
-        $mform->addElement('select', 'fairnessbonus', get_string('fairnessbonus', 'videoassessment'), array(
-            '0' => get_string('no', 'videoassessment'),
-            '1' => get_string('yes', 'videoassessment')
-        ));
+        $mform->addElement(
+            'select',
+            'fairnessbonus',
+            get_string('fairnessbonus', 'videoassessment'),
+            [
+                '0' => get_string('no', 'videoassessment'),
+                '1' => get_string('yes', 'videoassessment'),
+            ],
+        );
         $mform->addHelpButton('fairnessbonus', 'fairnessbonus', 'videoassessment');
-        $bonuspercentage = array();
+        $bonuspercentage = [];
         for ($i = 0; $i <= 100; $i++) {
             $bonuspercentage[$i] = $i . '%';
         }
 
-        $mform->addElement('select', 'bonuspercentage', 'Bonus Percentage<br>(On top of total)', $bonuspercentage);
+        $mform->addElement(
+            'select',
+            'bonuspercentage',
+            get_string('bonuspercentage', 'videoassessment') . '<br>(' . get_string('ontopoftotal', 'videoassessment') . ')',
+            $bonuspercentage,
+        );
         $mform->setDefault('bonuspercentage', 10);
         for ($i = 1; $i <= 6; $i++) {
-            $bonusscoregroup[$i][] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">within</span>');
+            $bonusscoregroup[$i][] = $mform->createElement(
+                'static',
+                '',
+                null,
+                '<span class="form-check-inline fitem" style="width: auto;">' . get_string('within', 'videoassessment') . '</span>',
+            );
             $bonusscoregroup[$i][] = $mform->createElement('select', 'bonusscale' . $i, "", $bonuspercentage);
-            $bonusscoregroup[$i][] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">of teacher score = </span>');
+            $bonusscoregroup[$i][] = $mform->createElement(
+                'static',
+                '',
+                null,
+                '<span class="form-check-inline fitem" style="width: auto;">'
+                . get_string('ofteacherscore', 'videoassessment') . '</span>',
+            );
             $bonusscoregroup[$i][] = $mform->createElement('select', 'bonus' . $i, "", $bonuspercentage);
-            $bonusscoregroup[$i][] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">of Fairness bonus</span>');
+            $bonusscoregroup[$i][] = $mform->createElement(
+                'static',
+                '',
+                null,
+                '<span class="form-check-inline fitem" style="width: auto;">'
+                . get_string('offairnessbonus', 'videoassessment') . '</span>',
+            );
             $grouplabel = "";
             switch ($i) {
                 case 1:
@@ -163,22 +197,44 @@ class mod_videoassessment_mod_form extends moodleform_mod
                 default:
                     break;
             }
-            $mform->addGroup($bonusscoregroup[$i], "bonusscoregroup" . $i, $grouplabel, array('', ''), false);
+            $mform->addGroup($bonusscoregroup[$i], "bonusscoregroup" . $i, $grouplabel, ['', ''], false);
         }
 
-        $mform->addElement('select', 'selffairnessbonus', get_string('selffairnessbonus', 'videoassessment'), array(
+        $mform->addElement('select', 'selffairnessbonus', get_string('selffairnessbonus', 'videoassessment'), [
             '0' => get_string('no', 'videoassessment'),
-            '1' => get_string('yes', 'videoassessment')
-        ));
+            '1' => get_string('yes', 'videoassessment'),
+        ]);
         $mform->addHelpButton('selffairnessbonus', 'selffairnessbonus', 'videoassessment');
-        $mform->addElement('select', 'selfbonuspercentage', 'Bonus Percentage<br>(On top of total)', $bonuspercentage);
+        $mform->addElement(
+            'select',
+            'bonuspercentage',
+            get_string('bonuspercentage', 'videoassessment') . '<br>(' . get_string('ontopoftotal', 'videoassessment') . ')',
+            $bonuspercentage,
+        );
         $mform->setDefault('bonuspercentage', 10);
         for ($i = 1; $i <= 6; $i++) {
-            $selfbonusscoregroup[$i][] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">within</span>');
-            $selfbonusscoregroup[$i][] = $mform->createElement('select', 'selfbonusscale' . $i, "", $bonuspercentage);
-            $selfbonusscoregroup[$i][] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">of teacher score = </span>');
-            $selfbonusscoregroup[$i][] = $mform->createElement('select', 'selfbonus' . $i, "", $bonuspercentage);
-            $selfbonusscoregroup[$i][] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">of Fairness bonus</span>');
+            $bonusscoregroup[$i][] = $mform->createElement(
+                'static',
+                '',
+                null,
+                '<span class="form-check-inline fitem" style="width: auto;">' . get_string('within', 'videoassessment') . '</span>',
+            );
+            $bonusscoregroup[$i][] = $mform->createElement('select', 'bonusscale' . $i, "", $bonuspercentage);
+            $bonusscoregroup[$i][] = $mform->createElement(
+                'static',
+                '',
+                null,
+                '<span class="form-check-inline fitem" style="width: auto;">'
+                . get_string('ofteacherscore', 'videoassessment') . '</span>',
+            );
+            $bonusscoregroup[$i][] = $mform->createElement('select', 'bonus' . $i, "", $bonuspercentage);
+            $bonusscoregroup[$i][] = $mform->createElement(
+                'static',
+                '',
+                null,
+                '<span class="form-check-inline fitem" style="width: auto;">'
+                . get_string('offairnessbonus', 'videoassessment') . '</span>',
+            );
             $grouplabel = "";
             switch ($i) {
                 case 1:
@@ -209,9 +265,8 @@ class mod_videoassessment_mod_form extends moodleform_mod
                 default:
                     break;
             }
-            $mform->addGroup($selfbonusscoregroup[$i], "selfbonusscoregroup" . $i, $grouplabel, array('', ''), false);
+            $mform->addGroup($selfbonusscoregroup[$i], "selfbonusscoregroup" . $i, $grouplabel, ['', ''], false);
         }
-
 
         $mform->addElement('header', 'ratings', get_string('ratings', 'videoassessment'));
         $mform->addHelpButton('ratings', 'ratings', 'videoassessment');
@@ -236,7 +291,6 @@ class mod_videoassessment_mod_form extends moodleform_mod
         $mform->setDefault('delayedteachergrade', 1);
         $mform->addHelpButton('delayedteachergrade', 'delayedteachergrade', 'videoassessment');
 
-
         $students = get_enrolled_users($this->context);
         $maxusedpeers = min(count($students), self::MAX_USED_PEERS_LIMIT);
         $usedpeeropts = range(0, $maxusedpeers);
@@ -245,24 +299,36 @@ class mod_videoassessment_mod_form extends moodleform_mod
         $mform->addHelpButton('usedpeers', 'usedpeers', 'videoassessment');
 
         if ($cm) {
-            $href = new moodle_url('/mod/videoassessment/view.php', array('id' => $cm->id, 'action' => 'peers'));
+            $href = new moodle_url('/mod/videoassessment/view.php', ['id' => $cm->id, 'action' => 'peers']);
             $linktext = get_string('assignpeers', 'videoassessment');
-            $mform->addGroup(array(), 'assignpeersgroup', "<a class='' href='$href'>$linktext</a>", null, false);
+            $mform->addGroup([], 'assignpeersgroup', "<a class='' href='$href'>$linktext</a>", null, false);
             $mform->addHelpButton('assignpeersgroup', 'assignpeers', 'videoassessment');
         }
-
 
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
     }
 
-    public function validation($data, $files)
-    {
-        // Allow plugin videoassessment types to do any extra validation after the form has been submitted
+    /**
+     * Validate form data for video assessment configuration.
+     *
+     * Performs comprehensive validation including rating percentages,
+     * date consistency, and grading limits for both quick setup and
+     * advanced configuration modes.
+     *
+     * @param array $data Form data to validate
+     * @param array $files Uploaded files data
+     * @return array Array of validation errors, empty if valid
+     */
+    public function validation($data, $files) {
+        // Allow plugin videoassessment types to do any extra validation after the form has been submitted.
         $errors = parent::validation($data, $files);
         if ($data['isquickSetup'] == 1) {
-            if ($data['isselfassesstype'] == 1 || $data['isteacherassesstype'] == 1 || $data['ispeerassesstype'] == 1 || $data['isclassassesstype'] == 1) {
+            if ($data['isselfassesstype'] == 1
+                || $data['isteacherassesstype'] == 1
+                || $data['ispeerassesstype'] == 1
+                || $data['isclassassesstype'] == 1) {
                 $quickratingsum = 0;
                 $checkboxes = ['selfassess', 'teacherassess', 'peerassess', 'classassess'];
                 foreach ($checkboxes as $check) {
@@ -275,7 +341,7 @@ class mod_videoassessment_mod_form extends moodleform_mod
                 }
             }
             if ($data['gradingsimpledirect'] > 100) {
-                $errors['simpledirectgroup'] = 'The grade to pass can not be greater than the maximum possible grade 100';
+                $errors['simpledirectgroup'] = get_string('errorovermaximumpossiblegrade', 'videoassessment');
             }
         } else {
             $ratingsum = $data['ratingteacher'] + $data['ratingself'] + $data['ratingpeer'] + $data['ratingclass'];
@@ -311,10 +377,15 @@ class mod_videoassessment_mod_form extends moodleform_mod
     }
 
     /**
-     * @author Le Xuan Anh Version2
+     * Add standard grading elements to the form with video assessment specific options.
+     *
+     * Creates grading configuration interface including advanced grading methods,
+     * training materials, fairness bonus settings, and grade categories.
+     *
+     * @param string $itemname Grade item name for component integration
+     * @return void
      */
-    public function standard_grading_coursemodule_elements_to_grading(string $itemname)
-    {
+    public function standard_grading_coursemodule_elements_to_grading(string $itemname) {
         global $COURSE, $CFG, $DB, $PAGE;
         $mform = &$this->_form;
         $component = "mod_{$this->_modname}";
@@ -327,7 +398,7 @@ class mod_videoassessment_mod_form extends moodleform_mod
                 $mform->addHelpButton('modstandardgrade', 'grade', 'videoassessment');
             }
 
-            //if supports grades and grades arent being handled via ratings
+            // If supports grades and grades arent being handled via ratings.
             if (!$this->_features->rating) {
                 $mform->addElement('modgrade', 'grade', get_string('modgrade', 'videoassessment'));
                 $mform->addHelpButton('grade', 'modgrade', 'videoassessment');
@@ -335,55 +406,80 @@ class mod_videoassessment_mod_form extends moodleform_mod
             }
 
             if ($this->_features->advancedgrading
-                and !empty($this->current->_advancedgradingdata['methods'])
-                and !empty($this->current->_advancedgradingdata['areas'])) {
+                && !empty($this->current->_advancedgradingdata['methods'])
+                && !empty($this->current->_advancedgradingdata['areas'])) {
 
                 if (count($this->current->_advancedgradingdata['areas']) == 1) {
-                    // if there is just one gradable area (most cases), display just the selector
-                    // without its name to make UI simplier
+                    // If there is just one gradable area (most cases), display just the selector
+                    // without its name to make UI simplier.
                     $areadata = reset($this->current->_advancedgradingdata['areas']);
                     $areaname = key($this->current->_advancedgradingdata['areas']);
-                    $mform->addElement('select', 'advancedgradingmethod_' . $areaname, 'Grading Methods', $this->current->_advancedgradingdata['methods']);
+                    $mform->addElement(
+                        'select',
+                        'advancedgradingmethod_' . $areaname,
+                        get_string('advancedgradingmethodsgroup', 'videoassessment'),
+                        $this->current->_advancedgradingdata['methods']
+                    );
                     $mform->addHelpButton('advancedgradingmethod_' . $areaname, 'gradingmethod', 'core_grading');
                 } else {
-                    // the module defines multiple gradable areas, display a selector
-                    // for each of them together with a name of the area
-                    $areasgroup = array();
+                    // The module defines multiple gradable areas, display a selector
+                    // for each of them together with a name of the area.
+                    $areasgroup = [];
                     foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
-                        $areasgroup[] = $mform->createElement('select', 'advancedgradingmethod_' . $areaname, $areadata['title'], $this->current->_advancedgradingdata['methods']);
-                        $areasgroup[] = $mform->createElement('static', 'advancedgradingareaname_' . $areaname, '', $areadata['title']);
-                        $mform->setDefault('advancedgradingmethod_' . $areaname, $this->current->{'advancedgradingmethod_'.$areaname});
+                        $areasgroup[] = $mform->createElement(
+                            'select',
+                            'advancedgradingmethod_' . $areaname,
+                            $areadata['title'],
+                            $this->current->_advancedgradingdata['methods']
+                        );
+                        $areasgroup[] = $mform->createElement(
+                            'static',
+                            'advancedgradingareaname_' . $areaname,
+                            '',
+                            $areadata['title']
+                        );
+                        $mform->setDefault(
+                            'advancedgradingmethod_' . $areaname,
+                            $this->current->{'advancedgradingmethod_'.$areaname},
+                        );
                     }
-                    $mform->addGroup($areasgroup, 'advancedgradingmethodsgroup', get_string('advancedgradingmethodsgroup', 'videoassessment'), array(' ', '<br />'), false);
+                    $mform->addGroup(
+                        $areasgroup,
+                        'advancedgradingmethodsgroup',
+                        get_string('advancedgradingmethodsgroup', 'videoassessment'),
+                        [' ', '<br />'],
+                        false
+                    );
                     $mform->addHelpButton('advancedgradingmethodsgroup', 'advancedgradingmethodsgroup', 'videoassessment');
                 }
             }
-            /* MinhTB VERSION 2 07-03-2016 */
-            $mform->addElement('select', 'training', get_string('trainingpretest', 'videoassessment'), array(
+            $mform->addElement('select', 'training', get_string('trainingpretest', 'videoassessment'), [
                 '0' => get_string('no', 'videoassessment'),
-                '1' => get_string('yes', 'videoassessment')
-            ));
+                '1' => get_string('yes', 'videoassessment'),
+            ]);
             $mform->setDefault('training', 0);
             $mform->addHelpButton('training', 'trainingpretest', 'videoassessment');
-            /* END MinhTB VERSION 2 07-03-2016 */
-
-            $mform->addElement('filemanager', 'trainingvideo',
+            $mform->addElement(
+                'filemanager',
+                'trainingvideo',
                 get_string('trainingvideo', 'videoassessment'),
                 null,
-                array(
+                [
                     'subdirs' => 0,
                     'maxbytes' => $COURSE->maxbytes,
                     'maxfiles' => 1,
-                    'accepted_types' => array('video', 'audio')
-                )
+                    'accepted_types' => ['video', 'audio'],
+                ],
             );
             $mform->addElement('hidden', 'trainingvideoid');
             $mform->setType('trainingvideoid', PARAM_INT);
             $mform->addHelpButton('trainingvideo', 'trainingvideo', 'videoassessment');
 
-            $mform->addElement('textarea', 'trainingdesc',
+            $mform->addElement(
+                'textarea',
+                'trainingdesc',
                 get_string('trainingdesc', 'videoassessment'),
-                array('cols' => 50, 'rows' => 8)
+                ['cols' => 50, 'rows' => 8]
             );
             $mform->setDefault('trainingdesc', get_string('trainingdesctext', 'videoassessment'));
             $mform->addHelpButton('trainingdesc', 'trainingdesc', 'videoassessment');
@@ -395,9 +491,13 @@ class mod_videoassessment_mod_form extends moodleform_mod
             $mform->setDefault('accepteddifference', 20);
             $mform->addHelpButton('accepteddifference', 'accepteddifference', 'videoassessment');
 
-
             if ($this->_features->gradecat) {
-                $mform->addElement('select', 'gradecat', 'Grade Category', grade_get_categories_menu($COURSE->id, $this->_outcomesused));
+                $mform->addElement(
+                    'select',
+                    'gradecat',
+                    get_string('gradecategory', 'videoassessment'),
+                    grade_get_categories_menu($COURSE->id, $this->_outcomesused)
+                );
                 $mform->addHelpButton('gradecat', 'gradecategoryonmodform', 'grades');
             }
 
@@ -406,20 +506,21 @@ class mod_videoassessment_mod_form extends moodleform_mod
             $mform->addHelpButton($gradepassfieldname, 'gradepass', 'grades');
             $mform->setType($gradepassfieldname, PARAM_RAW);
 
-            $module = array(
-                'name' => 'mod_videoassessment',
-                'fullpath' => '/mod/videoassessment/mod_form.js',
-                'requires' => array('node', 'event'),
-                'strings' => array(array('changetraingingwarning', 'mod_videoassessment'))
-            );
-            $PAGE->requires->js_init_call('M.mod_videoassessment.init_fairness_bonus_change', null, false, $module);
-            $PAGE->requires->js_init_call('M.mod_videoassessment.init_quick_setup_peer_change', null, false, $module);
-            $PAGE->requires->js_init_call('M.mod_videoassessment.init_training_change', null, false, $module);
+            $PAGE->requires->js_call_amd('mod_videoassessment/mod_form', 'initFairnessBonusChange');
+            $PAGE->requires->js_call_amd('mod_videoassessment/mod_form', 'initQuickSetupPeerChange');
+            $PAGE->requires->js_call_amd('mod_videoassessment/mod_form', 'initTrainingChange');
         }
     }
 
-    public function manageVideo()
-    {
+    /**
+     * Add video management interface elements to the form.
+     *
+     * Creates management links for video upload, deletion, association,
+     * assessment, and rubric management for teachers.
+     *
+     * @return void
+     */
+    public function manage_video() {
         global $COURSE, $CFG, $DB, $PAGE;
 
         $cm = $PAGE->cm;
@@ -428,11 +529,11 @@ class mod_videoassessment_mod_form extends moodleform_mod
             return;
         }
 
-        $viewurl = new moodle_url('/mod/videoassessment/view.php', array('id' => $cm->id));
+        $viewurl = new moodle_url('/mod/videoassessment/view.php', ['id' => $cm->id]);
         $context = context_module::instance($cm->id);
 
-        $va = $DB->get_record('videoassessment', array('id' => $cm->instance));
-        $course = $DB->get_record('course', array('id' => $va->course));
+        $va = $DB->get_record('videoassessment', ['id' => $cm->instance]);
+        $course = $DB->get_record('course', ['id' => $va->course]);
 
         require_once($CFG->dirroot . '/mod/videoassessment/locallib.php');
         $vaobj = new va($context, $cm, $course);
@@ -443,143 +544,357 @@ class mod_videoassessment_mod_form extends moodleform_mod
         $mform->addHelpButton('managevideos', 'managevideos', 'videoassessment');
         if ($isteacher) {
             if (va::uses_mobile_upload()) {
-                $this->add_link_element('takevideo', new moodle_url($viewurl, array('action' => 'upload', 'actionmodel' => 2)), get_string('takevideo', 'videoassessment'));
+                $this->add_link_element(
+                    'takevideo',
+                    new moodle_url($viewurl, ['action' => 'upload', 'actionmodel' => 2]),
+                    get_string('takevideo', 'videoassessment'),
+                );
             } else {
-                $this->add_link_element('uploadvideo', new moodle_url($viewurl, array('action' => 'upload', 'actionmodel' => 2)), get_string('uploadvideo', 'videoassessment'));
-                $this->add_link_element('videoassessment:bulkupload', new moodle_url('/mod/videoassessment/bulkupload/index.php', array('cmid' => $cm->id)), get_string('videoassessment:bulkupload', 'videoassessment'));
+                $this->add_link_element(
+                    'uploadvideo',
+                    new moodle_url($viewurl, ['action' => 'upload', 'actionmodel' => 2]),
+                    get_string('uploadvideo', 'videoassessment'),
+                );
+                $this->add_link_element(
+                    'videoassessment:bulkupload',
+                    new moodle_url('/mod/videoassessment/bulkupload/index.php', ['cmid' => $cm->id]),
+                    get_string('videoassessment:bulkupload', 'videoassessment'),
+                );
             }
-            /* MinhTB VERSION 2 */
-            $this->add_link_element('deletevideos', new moodle_url('/mod/videoassessment/deletevideos.php', array('id' => $cm->id)), get_string('deletevideos', 'videoassessment'));
-            $this->add_link_element('associate', new moodle_url($viewurl, array('action' => 'videos')), get_string('associate', 'videoassessment'));
-            $this->add_link_element('assess', $viewurl, get_string('assess', 'videoassessment'));
-            $this->add_link_element('publishvideos', new moodle_url($viewurl, array('action' => 'publish')), get_string('publishvideos', 'videoassessment'));
-            $this->add_link_element('assignclass', new moodle_url('/mod/videoassessment/assignclass/index.php', array('id' => $cm->id)), get_string('assignclass', 'videoassessment'));
-            $this->add_link_element('duplicaterubric', new moodle_url('/mod/videoassessment/rubric/duplicate.php', array('id' => $cm->id)), get_string('duplicaterubric', 'videoassessment'));
-            /* End */
+            $this->add_link_element(
+                'deletevideos',
+                new moodle_url('/mod/videoassessment/deletevideos.php', ['id' => $cm->id]),
+                get_string('deletevideos', 'videoassessment'),
+            );
+            $this->add_link_element(
+                'associate',
+                new moodle_url($viewurl, ['action' => 'videos']),
+                get_string('associate', 'videoassessment'),
+            );
+            $this->add_link_element(
+                'assess',
+                $viewurl,
+                get_string('assess', 'videoassessment'),
+            );
+            $this->add_link_element(
+                'publishvideos',
+                new moodle_url($viewurl, ['action' => 'publish']),
+                get_string('publishvideos', 'videoassessment'),
+            );
+            $this->add_link_element(
+                'assignclass',
+                new moodle_url('/mod/videoassessment/assignclass/index.php', ['id' => $cm->id]),
+                get_string('assignclass', 'videoassessment'),
+            );
+            $this->add_link_element(
+                'duplicaterubric',
+                new moodle_url('/mod/videoassessment/rubric/duplicate.php', ['id' => $cm->id]),
+                get_string('duplicaterubric', 'videoassessment'),
+            );
         }
     }
 
-    public function addNotifications()
-    {
+    /**
+     * Add notification configuration elements to the form.
+     *
+     * Creates comprehensive notification settings including teacher comments,
+     * peer assessments, reminder notifications, and video upload alerts.
+     *
+     * @return void
+     */
+    public function add_notifications() {
         global $PAGE;
         $mform = &$this->_form;
 
-
         $mform->addElement('header', 'notifications', get_string('notifications', 'videoassessment'));
         $mform->addHelpButton('notifications', 'notifications', 'videoassessment');
-        $notificationscarriergroup[] = $mform->createElement('advcheckbox', 'isregisteredemail', "", "registered email");
+        $notificationscarriergroup[] = $mform->createElement(
+            'advcheckbox',
+            'isregisteredemail',
+            "",
+            get_string('registeredemail', 'videoassessment'),
+        );
         $mform->setDefault('isregisteredemail', 0);
-        $notificationscarriergroup[] = $mform->createElement('advcheckbox', 'ismobilequickmail', "", "Mobile Quickmail");
+        $notificationscarriergroup[] = $mform->createElement(
+            'advcheckbox',
+            'ismobilequickmail',
+            "",
+            get_string('mobilequickmail', 'videoassessment'),
+        );
         $mform->setDefault('ismobilequickmail', 0);
-        $mform->addGroup($notificationscarriergroup, 'notificationcarriergroup', get_string('notificationcarriergroup', 'videoassessment'), array(' ', '<br />'), false);
+        $mform->addGroup(
+            $notificationscarriergroup,
+            'notificationcarriergroup',
+            get_string('notificationcarriergroup', 'videoassessment'),
+            [' ', '<br />'],
+            false,
+        );
         $mform->addHelpButton('notificationcarriergroup', 'notificationcarriergroup', 'videoassessment');
 
-        $teachernotificationtemplate = "Dear [[student name]],
-Good work! I just checked your presentation video and made some
-scores and comments. Here they are:
-[[insert assignment name]] [[insert current date]]
-Here is a link to this report: [[insert link to student page to view assessment]]
-You can redo your presentation on June 7th and get a better grade.
-Send an email to me if you have a question [[teacher email address]]
-Best regards,
-[[teacher name]]";
-        $mform->addElement('advcheckbox', 'teachercommentnotification', get_string('teachercommentnotification', 'videoassessment'), "<b>Teacher Comment notification</b><label class='teacher-notification-displaybtn collapsed'></label>");
+        $mform->addElement(
+            'advcheckbox',
+            'teachercommentnotification',
+            get_string('teachercommentnotification', 'videoassessment'),
+            '<b>'.
+            get_string('teachercomentnotificationlabel', 'videoassessment') .
+            '</b><label class="teacher-notification-displaybtn collapsed"></label>',
+        );
         $mform->setDefault('teachercommentnotification', 0);
         $mform->addHelpButton('teachercommentnotification', 'teachercommentnotification', 'videoassessment');
-        $teachernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>1.When to send notifiction</b></div>');
-
-        $teachernotificationgroup[] = $mform->createElement('advcheckbox', 'isfirstassessmentbyteacher', "", "First assessment by teacher");
-        $teachernotificationgroup[] = $mform->createElement('advcheckbox', 'isadditionalassessment', "", "Additional assessment by teacher");
-        $teachernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>2.What information to send</b></div>', '');
-        $teachernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with">[[student name]]<br/>[[VA assignment name]]<br/>[[current date]]<br/>[[link to view whole assessment report]]->view Report<br/>[[teacher email address]]<br/>[[teacher name]]</div>');
-        $teachernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>3.Template text for notification</b></div>');
-        $teachernotificationgroup[] = $mform->createElement('textarea', 'teachernotificationtemplate', "", ['rows' => 10, 'cols' => 80]);
-        $mform->setDefault('teachernotificationtemplate', $teachernotificationtemplate);
-        $mform->addGroup($teachernotificationgroup, 'teachernotificationgroup', "", array(' <br/>', '<br/>'), false);
-
-
-        $peertnotificationtemplate = "Dear [[student name]],
-Good work! One of your classmates just checked your presentation
-video and made some scores and comments. Here they are:
-[[insert assignment name]] [[insert current date]]
-Here is a link to this report: [[insert link to student page to view assessment]]
-**your classmates will get a bonus if they score you fairly**
-Send an email to me if you have a question [[teacher email address]]
-Best regards,
-[[teacher name]]";
-        $mform->addElement('advcheckbox', 'peercommentnotification', "", "<b>Peer Comment notification</b><label class='peer-notification-displaybtn collapsed'></label>");
-        $mform->setDefault('peercommentnotification', 0);
-        $peernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>1.When to send notifiction</b></div>');
-        $peernotificationgroup[] = $mform->createElement('advcheckbox', 'isfirstassessmentbystudent', "", "First assessment by student");
-        $peernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>2.What information to send</b></div>');
-        $peernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with">[[student name]]<br/>[[VA assignment name]]<br/>[[current date]]<br/>[[link to view whole assessment report]]->view Report<br/>[[teacher email address]]<br/>[[teacher name]]</div>');
-        $peernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>3.Template text for notification</b></div>');
-        $peernotificationgroup[] = $mform->createElement('textarea', 'peertnotificationtemplate', "", ['rows' => 10, 'cols' => 80]);
-        $mform->setDefault('peertnotificationtemplate', $peertnotificationtemplate);
-        $mform->addGroup($peernotificationgroup, 'peernotificationgroup', "", array(' <br/>', '<br/>'), false);
-
-
-        $remindernotificationtemplate = "Dear [[student name]],
-Have you watched and checked your presentation?
-Its due date is/was on June x. Here is a link:
-[[insert link to self-assessment page]]
-Be sure to write at least 3 comments as well as scores.
-Send an email to your me if you have a question [[teacher email
-address]]. Thanks!
-Best regards,
-[[teacher name]]";
-        $duadate = array("1" => 1, "2" => 2, "3" => 3, "4" => 4, "5" => 5);
-        $mform->addElement('advcheckbox', 'remindernotification', "", "<b>Reminder Notification</b><label class='reminder-notification-displaybtn collapsed'></label>");
-        $mform->setDefault('remindernotification', 0);
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>1.When to send notification</b></div>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isbeforeduedate', "", "before due date");
-        $remindernotificationgroup[] = $mform->createElement('select', 'beforeduedate', "days before", $duadate);
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">days before</span>');
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isonduedate', "", "on due date");
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isafterduedate', "", "after due date, every", array('group' => 1));
-        $remindernotificationgroup[] = $mform->createElement('select', 'afterduedate', "", $duadate);
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">days</span>');
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>2.What information to send</b></div>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isnovideouploaded', "", "on video uploaded");
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isnoselfassessment', "", "on self assessment");
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isnoselfassessmentwithcomments', "", "on self assessment with 20 words of comments");
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
-        $remindernotificationgroup[] = $mform->createElement('advcheckbox', 'isnopeerassessment', "", "on peer assessment");
-        $remindernotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>3.Template text for notification</b></div>');
-        $remindernotificationgroup[] = $mform->createElement('textarea', 'remindernotificationtemplate', "", ['rows' => 10, 'cols' => 80]);
-        $mform->setDefault('remindernotificationtemplate', $remindernotificationtemplate);
-        $mform->addGroup($remindernotificationgroup, 'remindernotificationgroup', "", array('', ' '), false);
-
-
-        $videonotificationtemplate = "Dear [[teacher name]],
-[[student name]] has just uploaded a video file.
-To view it and assess it, please go to: [[insert link to self-assessment page]]
-Best regards,
-https://moodle.sgu.ac.jp";
-        $mform->addElement('advcheckbox', 'videonotification', "", "<b>Video upload/reupload notification</b><label class='video-notification-displaybtn collapsed'></label>");
-        $mform->setDefault('videonotification', 0);
-        $videonotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>1.When to send notifiction</b></div>');
-        $videonotificationgroup[] = $mform->createElement('advcheckbox', 'isfirstupload', "", "when the student uploads a video  for first time");
-        $videonotificationgroup[] = $mform->createElement('advcheckbox', 'iswheneverupload', "", "whenever a student re-uploads a video");
-        $videonotificationgroup[] = $mform->createElement('static', '', null, '<div class="max-with"><b>2.Template text for notification</b></div>');
-        $videonotificationgroup[] = $mform->createElement('textarea', 'videonotificationtemplate', "", ['rows' => 10, 'cols' => 80]);
-        $mform->setDefault('videonotificationtemplate', $videonotificationtemplate);
-        $mform->addGroup($videonotificationgroup, 'videonotificationgroup', "", array(' <br/>', '<br/>'), false);
-
-        $module = array(
-            'name' => 'mod_videoassessment',
-            'fullpath' => '/mod/videoassessment/mod_form.js',
+        $teachernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>1.'. get_string('whentosendnotification', 'videoassessment') .'</b></div>',
         );
-        $PAGE->requires->js_init_call('M.mod_videoassessment.init_notification_form_change', null, false, $module);
+        $teachernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isfirstassessmentbyteacher',
+            "",
+            get_string('firstassessmentbyteacher', 'videoassessment'),
+        );
+        $teachernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isadditionalassessment',
+            "",
+            get_string('additionalassessmentbyteacher', 'videoassessment'),
+        );
+        $teachernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>2.' . get_string('whatinfomationtosend', 'videoassessment') . '</b></div>',
+            '',
+        );
+        $teachernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            get_string('whatinfomationtosendcontents', 'videoassessment'),
+        );
+        $teachernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>3.'. get_string('templatetextfornotification', 'videoassessment') .'</b></div>',
+        );
+        $teachernotificationgroup[] = $mform->createElement(
+            'textarea',
+            'teachernotificationtemplate',
+            "",
+            ['rows' => 10, 'cols' => 80],
+        );
+        $mform->setDefault('teachernotificationtemplate', get_string('teachernotificationtemplate', 'videoassessment'));
+        $mform->addGroup($teachernotificationgroup, 'teachernotificationgroup', "", [' <br/>', '<br/>'], false);
+
+        $mform->addElement(
+            'advcheckbox',
+            'peercommentnotification',
+            '',
+            '<b>'.
+            get_string('peercomentnotificationlabel', 'videoassessment') .
+            '</b><label class="teacher-notification-displaybtn collapsed"></label>',
+        );
+        $mform->setDefault('peercommentnotification', 0);
+        $peernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>1.'. get_string('whentosendnotification', 'videoassessment') .'</b></div>',
+        );
+        $peernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isfirstassessmentbystudent',
+            "",
+            get_string('firstassessmentbystudent', 'videoassessment'),
+        );
+        $peernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>2.' . get_string('whatinfomationtosend', 'videoassessment') . '</b></div>',
+            '',
+        );
+        $peernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            get_string('whatinfomationtosendcontents', 'videoassessment'),
+        );
+        $peernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>3.'. get_string('templatetextfornotification', 'videoassessment') .'</b></div>',
+        );
+        $peernotificationgroup[] = $mform->createElement(
+            'textarea',
+            'peertnotificationtemplate',
+            "",
+            ['rows' => 10, 'cols' => 80],
+        );
+        $mform->setDefault('peertnotificationtemplate', get_string('peertnotificationtemplate', 'videoassessment'));
+        $mform->addGroup($peernotificationgroup, 'peernotificationgroup', "", [' <br/>', '<br/>'], false);
+
+        $duadate = ["1" => 1, "2" => 2, "3" => 3, "4" => 4, "5" => 5];
+        $mform->addElement(
+            'advcheckbox',
+            'remindernotification',
+            "",
+            '<b>'. get_string('remindernotification', 'videoassessment') .
+            '</b><label class="reminder-notification-displaybtn collapsed"></label>',
+        );
+        $mform->setDefault('remindernotification', 0);
+        $remindernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>1.'. get_string('whentosendnotification', 'videoassessment') .'</b></div>',
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isbeforeduedate',
+            "",
+            get_string('beforeduedate', 'videoassessment'),
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'select',
+            'beforeduedate',
+            get_string('daysbefore', 'videoassessment'),
+            $duadate,
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<span class="form-check-inline fitem" style="width: auto;">' .
+            get_string('daysbefore', 'videoassessment') .'</span>',
+        );
+        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isonduedate',
+            "",
+            get_string('onduedate', 'videoassessment'),
+        );
+        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isafterduedate',
+            "",
+            get_string('afterduedateevery', 'videoassessment'),
+            ['group' => 1]
+        );
+        $remindernotificationgroup[] = $mform->createElement('select', 'afterduedate', "", $duadate);
+        $remindernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<span class="form-check-inline fitem" style="width: auto;">' .
+            get_string('days') . '</span>',
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>2.' . get_string('whatinfomationtosend', 'videoassessment') . '</b></div>',
+            '',
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isnovideouploaded',
+            "",
+            get_string('onvideouploaded', 'videoassessment'),
+        );
+        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isnoselfassessment',
+            "",
+            get_string('onselfassessment', 'videoassessment'),
+        );
+        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isnoselfassessmentwithcomments',
+            "",
+            get_string('onselfassessmentwithcomments', 'videoassessment'),
+        );
+        $remindernotificationgroup[] = $mform->createElement('static', '', null, '</br>');
+        $remindernotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isnopeerassessment',
+            "",
+            get_string('onpeerassessment', 'videoassessment'),
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>3.'. get_string('templatetextfornotification', 'videoassessment') .'</b></div>',
+        );
+        $remindernotificationgroup[] = $mform->createElement(
+            'textarea',
+            'remindernotificationtemplate',
+            "",
+            ['rows' => 10, 'cols' => 80]);
+        $mform->setDefault('remindernotificationtemplate', get_string('remindernotificationtemplate', 'videoassessment'));
+        $mform->addGroup($remindernotificationgroup, 'remindernotificationgroup', "", ['', ' '], false);
+
+        $mform->addElement(
+            'advcheckbox',
+            'videonotification',
+            "",
+            '<b>' . get_string('videouploadnotificationlabel', 'videoassessment') .
+            '</b><label class="video-notification-displaybtn collapsed"></label>',
+        );
+        $mform->setDefault('videonotification', 0);
+        $videonotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>1.'. get_string('whentosendnotification', 'videoassessment') .'</b></div>',
+        );
+        $videonotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'isfirstupload',
+            "",
+            get_string('videouploadforthefirsttime', 'videoassessment'),
+        );
+        $videonotificationgroup[] = $mform->createElement(
+            'advcheckbox',
+            'iswheneverupload',
+            "",
+            get_string('whenevervideoupload', 'videoassessment'),
+        );
+        $videonotificationgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<div class="max-with"><b>2.'. get_string('templatetextfornotification', 'videoassessment') .'</b></div>',
+        );
+        $videonotificationgroup[] = $mform->createElement(
+            'textarea',
+            'videonotificationtemplate',
+            "",
+            ['rows' => 10, 'cols' => 80],
+        );
+        $mform->setDefault('videonotificationtemplate', get_string('videonotificationtemplate', 'videoassessment'));
+        $mform->addGroup($videonotificationgroup, 'videonotificationgroup', "", [' <br/>', '<br/>'], false);
+
+        $PAGE->requires->js_call_amd('mod_videoassessment/mod_form', 'initNotificationFormChange');
         $PAGE->requires->css(new \moodle_url('/mod/videoassessment/mod_form.css'));
     }
 
-    private function addQuickSetupElement()
-    {
+    /**
+     * Add quick setup configuration elements to the form.
+     *
+     * Creates simplified assessment type configuration interface with
+     * checkboxes for different assessment types and peer count settings.
+     *
+     * @return void
+     */
+    private function add_quick_setup_element() {
         global $PAGE;
         $cm = $PAGE->cm;
 
@@ -587,70 +902,87 @@ https://moodle.sgu.ac.jp";
         for ($i = 100; $i >= 0; $i--) {
             $ratingopts[$i] = $i . '%';
         }
-        $numberofpeers = array();
+        $numberofpeers = [];
         for ($i = 0; $i <= 5; $i++) {
             $numberofpeers[$i] = $i;
         }
-        $mform->addElement('header', 'quickSetup', "Quick Setup");
+        $mform->addElement('header', 'quickSetup', get_string('quickSetup', 'videoassessment'));
         $mform->addElement('hidden', 'isquickSetup', 0);
         $mform->setType('isquickSetup', PARAM_RAW);
         $mform->addHelpButton('quickSetup', 'quickSetup', 'videoassessment');
 
-        $assesstypegroup[] = $mform->createElement('advcheckbox', 'isselfassesstype', "", "Self");
+        $assesstypegroup[] = $mform->createElement('advcheckbox', 'isselfassesstype', "", get_string('self', 'videoassessment'));
         $mform->setDefault('isselfassesstype', 0);
         $assesstypegroup[] = $mform->createElement('select', 'selfassess', "", $ratingopts);
         $mform->setDefault('selfassess', 0);
 
-        $assesstypegroup[] = $mform->createElement('advcheckbox', 'ispeerassesstype', "", "Peer");
+        $assesstypegroup[] = $mform->createElement('advcheckbox', 'ispeerassesstype', "", get_string('peer', 'videoassessment'));
         $mform->setDefault('ispeerassesstype', 0);
         $assesstypegroup[] = $mform->createElement('select', 'peerassess', "", $ratingopts);
         $mform->setDefault('peerassess', 0);
 
-        $assesstypegroup[] = $mform->createElement('advcheckbox', 'isteacherassesstype', "", "Teacher");
+        $assesstypegroup[] = $mform->createElement(
+            'advcheckbox',
+            'isteacherassesstype',
+            "",
+            get_string('teacher', 'videoassessment'),
+        );
         $mform->setDefault('isteacherassesstype', 0);
         $assesstypegroup[] = $mform->createElement('select', 'teacherassess', "", $ratingopts);
         $mform->setDefault('teacherassess', 100);
 
-        $assesstypegroup[] = $mform->createElement('advcheckbox', 'isclassassesstype', "", "Class");
+        $assesstypegroup[] = $mform->createElement('advcheckbox', 'isclassassesstype', "", get_string('class', 'videoassessment'));
         $mform->setDefault('isclassassesstype', 0);
         $assesstypegroup[] = $mform->createElement('select', 'classassess', "", $ratingopts);
         $mform->setDefault('classassess', 0);
 
-        $mform->addGroup($assesstypegroup, 'assesstypegroup', "Types of assessment", array(''), false);
-
+        $mform->addGroup($assesstypegroup, 'assesstypegroup', get_string('typeofassessment', 'videoassessment'), [''], false);
 
         $students = get_enrolled_users($this->context);
         $maxusedpeers = min(count($students), self::MAX_USED_PEERS_LIMIT);
-        $mform->addElement('select', 'numberofpeers', 'Number of peers', $numberofpeers);
+        $mform->addElement('select', 'numberofpeers', get_string('numberofpeers', 'videoassessment'), $numberofpeers);
         $mform->setDefault('numberofpeers', 0);
         $mform->addHelpButton('numberofpeers', 'usedpeers', 'videoassessment');
 
-//        if ($cm) {
-//            $href = new moodle_url('/mod/videoassessment/view.php', array('id' => $cm->id, 'action' => 'peers'));
-//            $contentbuttonurl = $href->out();
-//            $contentbuttonlabel = '<a class="btn btn-primary" target="_blank" href="' . $contentbuttonurl . '">Go to Assign Peers</a>';
-//            $assignpeerbtsgroup[] = $mform->createElement('html', $contentbuttonlabel);
-//            $mform->addGroup($assignpeerbtsgroup, 'assignpeerbtsgroup', "Assign Peers", array(' ', '<br />'), false);
-//            $mform->addHelpButton('assignpeerbtsgroup', 'assignpeers', 'videoassessment');
-//        }
-
-        $simpledirectgroup[] = $mform->createElement('text', 'gradingsimpledirect', "", array('size' =>5));
+        $simpledirectgroup[] = $mform->createElement('text', 'gradingsimpledirect', "", ['size' => 5]);
         $mform->setType('gradingsimpledirect', PARAM_RAW);
         $mform->setDefault('gradingsimpledirect', 100);
-        $simpledirectgroup[] = $mform->createElement('static', '', null, '<span class="form-check-inline  fitem" style="width: auto;">maximum points</span>');
+        $simpledirectgroup[] = $mform->createElement(
+            'static',
+            '',
+            null,
+            '<span class="form-check-inline  fitem" style="width: auto;">' .
+            get_string('maximumpoints', 'videoassessment') .
+            '</span>',
+        );
 
-        $mform->addGroup($simpledirectgroup, 'simpledirectgroup', "Grading - simple direct", array(' ', '<br />'), false);
+        $mform->addGroup(
+            $simpledirectgroup,
+            'simpledirectgroup',
+            get_string('simpledirectgroup', 'videoassessment'),
+            [' ', '<br />'],
+            false,
+        );
 
-        $mform->addElement('button', 'quickSetupButton', 'Submit');
+        $mform->addElement('button', 'quickSetupButton', get_string('submit'));
         $PAGE->requires->jquery();
-        //$PAGE->requires->js('/mod/videoassessment/grademanage.js', true);
-		$PAGE->requires->js_call_amd('mod_videoassessment/grademanage', 'init_grademanage', array());
+        $PAGE->requires->js_call_amd('mod_videoassessment/grademanage', 'init_grademanage', []);
     }
 
-    private function add_link_element($linkname, $href, $linktext)
-    {
+    /**
+     * Add a link element to the form for management actions.
+     *
+     * Creates clickable link elements with help buttons for various
+     * video assessment management functions.
+     *
+     * @param string $linkname Name identifier for the link element
+     * @param moodle_url $href URL for the link destination
+     * @param string $linktext Display text for the link
+     * @return void
+     */
+    private function add_link_element($linkname, $href, $linktext) {
         $mform = &$this->_form;
-        $mform->addGroup(array(), $linkname . 'group', "<a class='managelink' href='$href'>$linktext</a>", null, false);
+        $mform->addGroup([], $linkname . 'group', "<a class='managelink' href='$href'>$linktext</a>", null, false);
         $mform->addHelpButton($linkname . 'group', $linkname, 'videoassessment');
     }
 }

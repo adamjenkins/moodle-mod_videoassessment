@@ -14,33 +14,49 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * The videoassess namespace definition.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
-namespace videoassess;
+namespace mod_videoassessment;
 
 defined('MOODLE_INTERNAL') || die();
 
-class print_page
-{
+/**
+ * Print page controller for video assessment reports.
+ *
+ * This class handles the generation and display of printable reports
+ * including rubric assessments and grading summaries for video assessments.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class print_page {
     /**
+     * Video assessment instance object.
+     *
+     * Contains the main video assessment functionality and data.
      *
      * @var va
      */
     private $va;
+
     /**
+     * Print renderer instance.
+     *
+     * Handles the rendering of printable content and layouts.
      *
      * @var \mod_videoassessment_print_renderer
      */
     private $output;
 
-    public function __construct(va $va)
-    {
+    /**
+     * Initialize the print page controller.
+     *
+     * Sets up the embedded page layout, initializes the video assessment
+     * instance, and configures the print renderer with appropriate styling.
+     *
+     * @param va $va Video assessment instance object
+     * @return void
+     */
+    public function __construct(va $va) {
         global $PAGE;
 
         $PAGE->set_pagelayout('embedded');
@@ -52,8 +68,15 @@ class print_page
         $PAGE->requires->css('/mod/videoassessment/styles-print.css');
     }
 
-    public function do_action()
-    {
+    /**
+     * Execute the requested print action.
+     *
+     * Routes the request to the appropriate print method based on
+     * the action parameter from the URL.
+     *
+     * @return void
+     */
+    public function do_action() {
         $action = optional_param('action', null, PARAM_ALPHA);
 
         switch ($action) {
@@ -63,8 +86,16 @@ class print_page
         }
     }
 
-    private function rubric_report()
-    {
+    /**
+     * Generate and display rubric assessment report.
+     *
+     * Creates a comprehensive printable report showing rubric assessments,
+     * grades, comments, and final scores for selected users with proper
+     * page breaks and formatting for printing.
+     *
+     * @return void
+     */
+    private function rubric_report() {
         global $OUTPUT, $PAGE, $DB;
 
         echo $this->output->header();
@@ -114,9 +145,17 @@ class print_page
                     $gradingarea = $timing . $gradertype;
                     $o .= $OUTPUT->heading(
                         $this->va->timing_str($timing, null, 'ucfirst') . ' - ' . va::str($gradertype),
-                        4, 'main', 'heading-' . $gradingarea);
-                    $gradinginfo = grade_get_grades($this->va->course->id, 'mod', 'videoassessment',
-                        $this->va->instance, $userid);
+                        4,
+                        'main',
+                        'heading-' . $gradingarea
+                    );
+                    $gradinginfo = grade_get_grades(
+                        $this->va->course->id,
+                        'mod',
+                        'videoassessment',
+                        $this->va->instance,
+                        $userid
+                    );
 
                     $o .= \html_writer::start_tag('div', array('id' => 'rubrics-' . $gradingarea));
 
@@ -125,7 +164,7 @@ class print_page
                         if (!is_null($gradeitems) && !empty($gradeitems)) {
                             foreach ($gradeitems as $gradeitem) {
                                 $o .= $controller->render_grade($PAGE, $gradeitem->id, $gradinginfo, '', false);
-                                $timinggrades[] = \html_writer::tag('span', (int)$gradeitem->grade, array('class' => 'rubrictext-' . $gradertype));
+                                $timinggrades[] = \html_writer::tag('span', (int) $gradeitem->grade, array('class' => 'rubrictext-' . $gradertype));
                                 $o .= \html_writer::tag('hr', '');
                             }
                         }
@@ -133,49 +172,66 @@ class print_page
                     $o .= \html_writer::end_tag('div');
                 }
 
-                //adtis
+                // adtis
                 $o .= $OUTPUT->heading("General Comments");
                 $o .= \html_writer::start_tag('div', array('class' => 'card  card-body'));
                 foreach ($this->va->gradertypes as $gradertype) {
-                    if ( $gradertype == 'training' || $gradertype == 'class' ||($this->va->va->class && $gradertype == 'class' && !has_capability('mod/videoassessment:grade', $this->va->context))) {
+                    if (
+                        $gradertype == 'training'
+                        || $gradertype == 'class'
+                        || ($this->va->va->class && $gradertype == 'class' && !has_capability('mod/videoassessment:grade', $this->va->context))) {
                         continue;
                     }
-                    $gradingarea = $timing.$gradertype;
+                    $gradingarea = $timing . $gradertype;
                     $grades = $this->va->get_grade_items($gradingarea, $userid);
-                    foreach ($grades as $gradeitem){
-                        $comment = '<label class="submissioncomment">'.$gradeitem->submissioncomment.'</label>';
-                        if($gradertype == "peer"){
+                    foreach ($grades as $gradeitem) {
+                        $comment = '<label class="submissioncomment">' . $gradeitem->submissioncomment . '</label>';
+                        if ($gradertype == "peer") {
                             $lable = '<span class="blue box">Peer</span>';
-                        }elseif ($gradertype == "teacher"){
+                        } else if ($gradertype == "teacher") {
                             $lable = '<span class="green box">Teacher</span>';
-                        }elseif ($gradertype == "self"){
+                        } else if ($gradertype == "self") {
                             $lable = '<span class="red box">Self</span>';
                         }
-                        $o .= $OUTPUT->heading($lable.$comment);
+                        $o .= $OUTPUT->heading($lable . $comment);
                     }
 
                 }
                 $o .= \html_writer::end_tag('div');
 
                 $gradeduser = $DB->get_record('user', array('id' => $userid));
-                $o .= \html_writer::start_tag('div', array('class' => 'comment comment-'.$gradertype))
-                    .$OUTPUT->user_picture($gradeduser)
-                    .' '.fullname($gradeduser)
-                    .\html_writer::end_tag('div');
+                $o .= \html_writer::start_tag('div', array('class' => 'comment comment-' . $gradertype))
+                    . $OUTPUT->user_picture($gradeduser)
+                    . ' ' . fullname($gradeduser)
+                    . \html_writer::end_tag('div');
 
                 if ($timinggrades) {
-                    $totalScore = ' ='.\html_writer::start_tag('div', array('class' => 'comment-grade')).'<span class="comment-score-text">Total    Score</span><span class="comment-score">'.(int)$usergrades->{'grade'.$timing}.'</span>'.\html_writer::end_tag('div');
-                    $fairnessBonus = '<span  class="fairness">+</span> '.\html_writer::start_tag('div', array('class' => 'comment-grade fairness')).'<span class="comment-score-text" >+Fairness Bonus</span><span class="comment-score">'.(int)$usergrades->fairnessbonus.'</span>'.\html_writer::end_tag('div');
-                    $finalscore = ' = '.\html_writer::start_tag('div', array('class' => 'comment-grade')).'<span class="comment-score-text">Final    Score</span><span class="comment-score">'.(int)$usergrades->finalscore.'</span>'.\html_writer::end_tag('div');
-                    $o .= $OUTPUT->container(get_string('grade').': '.implode(', ', $timinggrades).$totalScore.$fairnessBonus.$finalscore, 'finalgrade');
+                    $totalscore = ' ='
+                        . \html_writer::start_tag('div', array('class' => 'comment-grade'))
+                        . '<span class="comment-score-text">Total    Score</span><span class="comment-score">'
+                        . (int) $usergrades->{'grade' . $timing}
+                        . '</span>'
+                        . \html_writer::end_tag('div');
+                    $fairnessbonus = '<span  class="fairness">+</span> '
+                        . \html_writer::start_tag('div', array('class' => 'comment-grade fairness'))
+                        . '<span class="comment-score-text" >+Fairness Bonus</span><span class="comment-score">'
+                        . (int) $usergrades->fairnessbonus
+                        . '</span>'
+                        . \html_writer::end_tag('div');
+                    $finalscore = ' = '
+                        . \html_writer::start_tag('div', array('class' => 'comment-grade'))
+                        . '<span class="comment-score-text">Final    Score</span><span class="comment-score">'
+                        . (int) $usergrades->finalscore
+                        . '</span>'
+                        . \html_writer::end_tag('div');
+                    $o .= $OUTPUT->container(get_string('grade') . ': ' . implode(', ', $timinggrades) . $totalscore . $fairnessbonus . $finalscore, 'finalgrade');
                 }
             }
             $o .= \html_writer::end_tag('div');
         }
 
-        $PAGE->requires->js_init_call('M.mod_videoassessment.report_combine_rubrics', null, false,
-            $this->va->jsmodule);
-        $PAGE->requires->js_init_call('M.mod_videoassessment.init_print');
+        $PAGE->requires->js_call_amd('mod_videoassessment/module', 'reportCombineRubrics');
+        $PAGE->requires->js_call_amd('mod_videoassessment/module', 'initPrint');
 
         echo $o;
 

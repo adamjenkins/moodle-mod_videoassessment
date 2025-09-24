@@ -23,7 +23,7 @@
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 @charset "UTF-8";
@@ -36,7 +36,6 @@
     padding-top: 0 !important;
 }
 
-/* AnhLX Add */
 .pagebreak {
     page-break-before: always;
 }
@@ -62,8 +61,6 @@
     word-break: break-word;
     display: -webkit-inline-box;
 }
-
-/* end */
 
 #page-content h2 {
     font-size: 150%;

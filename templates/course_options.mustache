@@ -1,0 +1,7 @@
+<option value="0">({{#str}} new {{/str}})</option>
+
+{{#courses}}
+    <option value="{{id}}"{{#selected}} selected{{/selected}}>
+        {{fullname}}
+    </option>
+{{/courses}}

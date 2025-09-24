@@ -14,26 +14,40 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Form for advance grading of videos for the videoassessment module.
- *
- * @package    mod_videoassessment
- * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
- */
-
-namespace videoassess\form;
-use \videoassess\va;
+namespace mod_videoassessment\form;
+use mod_videoassessment\va;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Moodle form for advanced grading within the Video Assessment module.
+ *
+ * This form handles the display and submission of grades and comments
+ * for video assessments, supporting both simple and advanced grading methods.
+ *
+ * @package    mod_videoassessment
+ * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class assess extends \moodleform {
     /**
-     * @var stdClass stores the advanced grading instance (if used in grading)
+     * Stores the advanced grading instance(s) if used in grading.
+     *
+     * This can be an object containing multiple grading instances indexed by timing.
+     *
+     * @var \stdClass|array
      */
     private $advancegradinginstance;
 
-    function definition() {
+    /**
+     * Define the form structure and elements.
+     *
+     * Sets up hidden fields, grading sections, and action buttons
+     * for the video assessment grading form.
+     *
+     * @return void
+     */
+    public function definition() {
         global $OUTPUT;
 
         $mform = $this->_form;
@@ -46,7 +60,7 @@ class assess extends \moodleform {
         $formattr = $mform->getAttributes();
         $formattr['id'] = 'submitform';
         $mform->setAttributes($formattr);
-        // hidden params
+        // Hidden params.
         $mform->addElement('hidden', 'action', 'assess');
         $mform->setType('action', PARAM_ALPHA);
         $mform->addElement('hidden', 'userid', $data->userid);
@@ -66,10 +80,10 @@ class assess extends \moodleform {
         $mform->addElement('hidden', 'gradertype', $data->gradertype);
         $mform->setType('gradertype', PARAM_ALPHA);
 
-	    if (!empty($data->rubricspassed)) {
-		    $mform->addElement('hidden', 'rubrics_passed', json_encode($data->rubricspassed));
-		    $mform->setType('rubrics_passed', PARAM_TEXT);
-	    }
+        if (!empty($data->rubricspassed)) {
+            $mform->addElement('hidden', 'rubrics_passed', json_encode($data->rubricspassed));
+            $mform->setType('rubrics_passed', PARAM_TEXT);
+        }
 
         $this->add_grades_section();
 
@@ -77,9 +91,12 @@ class assess extends \moodleform {
     }
 
     /**
-     * Gets or sets the instance for advanced grading
+     * Gets or sets the instance for advanced grading.
      *
-     * @param array
+     * Manages the advanced grading instance used for rubric-based grading.
+     *
+     * @param array|\stdClass|false $gradinginstance Advanced grading instance or false to get current
+     * @return \stdClass|array|false Current advanced grading instance
      */
     public function use_advanced_grading($gradinginstance = false) {
         if ($gradinginstance !== false) {
@@ -88,14 +105,22 @@ class assess extends \moodleform {
         return $this->advancegradinginstance;
     }
 
-    function add_grades_section() {
+    /**
+     * Add the grades section to the form.
+     *
+     * Creates grading elements for each timing (before/after) with support
+     * for advanced grading (rubric) or simple grading (points/scale).
+     *
+     * @return void
+     */
+    public function add_grades_section() {
         global $CFG, $DB, $USER, $OUTPUT;
 
         $mform = $this->_form;
         $data = $this->_customdata;
-        /* @var $va \videoassess\va */
+        /* @var $va \mod_videoassessment\va */
         $va = $data->va;
-        $attributes = array();
+        $attributes = [];
 
         $user = $DB->get_record('user', array('id' => optional_param('userid', 0, PARAM_INT)));
 
@@ -106,18 +131,16 @@ class assess extends \moodleform {
 
         foreach ($va->timings as $timing) {
 
-            if(property_exists($this->_customdata,'grade'.$timing)){
-                $grade = $this->_customdata->{'grade'.$timing};
+            if (property_exists($this->_customdata, 'grade' . $timing)) {
+                $grade = $this->_customdata->{'grade' . $timing};
             }
             if ($gradinginstances) {
-                // ルーブリック
-                //grade type -rubric
+                // Grade type -rubric.
                 $mform->addElement('hidden', 'gradecategory' . $timing, 1);
                 $mform->setType('gradecategory'.$timing, PARAM_RAW);
                 if (!empty($gradinginstances->$timing)) {
                     $gradinginstance = $gradinginstances->$timing;
                     $gradinginstance->get_controller()->set_grade_range($grademenu);
-//                 $gradinginstance = $gradinginstance->get_controller()->get_current_instance();
                     $gradingelement = $mform->addElement(
                         'grading', 'advancedgrading' . $timing,
                         $va->str('grade') . ':',
@@ -129,15 +152,15 @@ class assess extends \moodleform {
                         $mform->setType('advancedgradinginstanceid', PARAM_INT);
                     }
                 } else {
-                    // 2012/05/09 ルーブリックが作成されていなければ評定できないようにする
+                    // Ensure that grading cannot be performed unless a rubric has been created.
                     $mform->addElement('hidden', 'xgrade' . $timing, -1);
                     $mform->setType('xgrade' . $timing, PARAM_INT);
                     continue;
                 }
-            }else {
+            } else {
                 // Use simple direct grading.
                 if ($va->va->grade > 0) {
-                    //grade type -simple direct grading【point】
+                    // Grade type -simple direct grading【point】.
                     $mform->addElement('hidden', 'gradecategory' . $timing, 2);
                     $mform->setType('gradecategory'.$timing, PARAM_RAW);
                     $name = get_string('gradeoutof', 'assign', $va->va->grade);
@@ -154,7 +177,7 @@ class assess extends \moodleform {
                         $mform->addHelpButton('gradedisabled', 'gradeoutofhelp', 'assign');
                     }
                 } else {
-                    //grade type -simple direct grading【scale】
+                    // Grade type -simple direct grading【scale】.
                     $mform->addElement('hidden', 'gradecategory' . $timing, 3);
                     $mform->setType('gradecategory'.$timing, PARAM_RAW);
                     $grademenu = array(-1 => get_string("nograde")) + make_grades_menu($va->va->grade);
@@ -177,12 +200,12 @@ class assess extends \moodleform {
                 }
             }
             if (!empty($data->enableoutcomes)) {
-                foreach($data->grading_info->outcomes as $n=>$outcome) {
+                foreach ($data->grading_info->outcomes as $n => $outcome) {
                     $options = make_grades_menu(-$outcome->scaleid);
                     if ($outcome->grades[$data->submission->userid]->locked) {
                         $options[0] = get_string('nooutcome', 'grades');
                         $mform->addElement('static', 'outcome_'.$n.'['.$data->userid.']', $outcome->name.':',
-                                           $options[$outcome->grades[$data->submission->userid]->grade]);
+                                            $options[$outcome->grades[$data->submission->userid]->grade]);
                     } else {
                         $options[''] = get_string('nooutcome', 'grades');
                         $attributes = array('id' => 'menuoutcome_'.$n );
@@ -192,7 +215,7 @@ class assess extends \moodleform {
                     }
                 }
             }
-            $course_context = \context_module::instance($data->cm->id);
+            $coursecontext = \context_module::instance($data->cm->id);
             $gradestr = '-';
             if (isset($grade->grade) && $grade->grade > -1) {
                 $gradestr = $grade->grade.'%';
@@ -201,30 +224,49 @@ class assess extends \moodleform {
                     \html_writer::tag('span', $gradestr, array('class' => 'mark')));
             $mform->setType('finalgrade'.$timing, PARAM_INT);
 
-            $mform->addElement('editor', 'submissioncomment'.$timing,get_string('feedback', 'videoassessment').':',
-            		array('cols' => 50, 'rows' => 8), array('maxfiles' => EDITOR_UNLIMITED_FILES,
-                    'noclean' => true, 'context' => $course_context, 'subdirs' => true));
+            $mform->addElement('editor', 'submissioncomment' . $timing, get_string('feedback', 'videoassessment') . ':',
+                    array('cols' => 50, 'rows' => 8),
+                    array(
+                        'maxfiles' => EDITOR_UNLIMITED_FILES,
+                        'noclean' => true,
+                        'context' => $coursecontext, 'subdirs' => true,
+                    ),
+                );
 
             if (isset($grade->submissioncomment)) {
-            $mform->setDefault('submissioncomment'.$timing, array('text' => $grade->submissioncomment,
-                'format' => FORMAT_HTML));
+                $mform->setDefault(
+                    'submissioncomment'. $timing,
+                    array(
+                        'text' => $grade->submissioncomment,
+                        'format' => FORMAT_HTML,
+                    ),
+                );
             }
-            if($data->gradertype == "teacher" || $data->gradertype == "peer")
-            $mform->addElement('advcheckbox',"isnotifystudent","notify student",array(),array(0,1));
+            if ($data->gradertype == "teacher" || $data->gradertype == "peer") {
+                $mform->addElement('advcheckbox', "isnotifystudent", "notify student", [], [0, 1]);
+            }
             if (isset($grade->isnotifystudent)) {
-                $mform->setDefault("isnotifystudent",$grade->isnotifystudent);
-            }else{
+                $mform->setDefault("isnotifystudent", $grade->isnotifystudent);
+            } else {
                 $mform->setDefault('isnotifystudent', 1);
             }
-
         }
     }
-    public function validation($data, $files)
-    {
+
+    /**
+     * Validate form data for grade ranges and required fields.
+     *
+     * Ensures grades are within valid ranges (0-100) for point-based grading.
+     *
+     * @param array $data Form data to validate
+     * @param array $files Uploaded files array
+     * @return array Array of validation errors
+     */
+    public function validation($data, $files) {
         // Allow plugin videoassessment types to do any extra validation after the form has been submitted
         $errors = parent::validation($data, $files);
         $cdata = $this->_customdata;
-        /* @var $va \videoassess\va */
+        /* @var $va \mod_videoassessment\va */
         $va = $cdata->va;
         foreach ($va->timings as $timing) {
             if (!empty($data['xgrade'.$timing]) && $va->va->grade > 0) {
@@ -236,30 +278,46 @@ class assess extends \moodleform {
 
         return $errors;
     }
+
     /**
+     * Add action buttons to the form.
      *
-     * @param boolean $cancel
-     * @param string $submitlabel
+     * Creates submit and cancel buttons for the grading form.
+     *
+     * @param boolean $cancel Whether to show cancel button
+     * @param string|null $submitlabel Custom label for submit button
+     * @return void
      */
-    function add_action_buttons($cancel = true, $submitlabel=null) {
+    public function add_action_buttons($cancel = true, $submitlabel=null) {
         $mform = $this->_form;
-        $buttonarray=array();
+        $buttonarray = [];
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));
         $buttonarray[] = &$mform->createElement('cancel');
-        $mform->addGroup($buttonarray, 'grading_buttonar', '', array(' '), false);
+        $mform->addGroup($buttonarray, 'grading_buttonar', '', [' '], false);
         $mform->closeHeaderBefore('grading_buttonar');
         $mform->setType('grading_buttonar', PARAM_RAW);
     }
 
-    function add_submission_content() {
+    /**
+     * Add submission content section to the form.
+     *
+     * Displays the student's submission content in a read-only section.
+     *
+     * @return void
+     */
+    public function add_submission_content() {
         $mform = $this->_form;
         $mform->addElement('header', 'Submission', get_string('submission', 'videoassessment'));
         $mform->addElement('static', '', '' , $this->_customdata->submission_content );
     }
 
     /**
+     * Set form data with proper text formatting defaults.
      *
-     * @param \stdClass $data
+     * Ensures text fields have proper format defaults before setting data.
+     *
+     * @param \stdClass $data Data object to set
+     * @return bool Success status from parent method
      */
     public function set_data($data) {
         if (!isset($data->text)) {
@@ -279,6 +337,15 @@ class assess extends \moodleform {
         return parent::set_data($data);
     }
 
+    /**
+     * Get form data with advanced grading processing.
+     *
+     * Processes advanced grading instances to extract grades and
+     * returns the complete form data object.
+     *
+     * @param string|null $gradertype Optional grader type override
+     * @return \stdClass|null Form data object or null if cancelled
+     */
     public function get_data($gradertype = null) {
         $data = parent::get_data();
 
@@ -289,11 +356,11 @@ class assess extends \moodleform {
         if (!empty($this->_customdata->submission->id)) {
             $itemid = $this->_customdata->submission->id;
         } else {
-            $itemid = null; //TODO: this is wrong, itemid MUST be known when saving files!! (skodak)
+            $itemid = null; // TODO: this is wrong, itemid MUST be known when saving files!! (skodak)
         }
 
         if ($this->use_advanced_grading() && !isset($data->advancedgrading)) {
-            $data->advancedgrading = null;//XXX
+            $data->advancedgrading = null; // XXX
         }
 
         $gradinginstance = $this->use_advanced_grading();
@@ -310,11 +377,14 @@ class assess extends \moodleform {
         return $data;
     }
 
-
     /**
+     * Get the current grade for a specific timing.
      *
-     * @param string $timing
-     * @return float
+     * Retrieves the existing grade from the database for the current user
+     * and specified timing.
+     *
+     * @param string $timing Timing key ('before' or 'after')
+     * @return float Current grade value or -1 if not found
      */
     protected function get_current_grade($timing) {
         global $DB, $USER;
@@ -324,7 +394,7 @@ class assess extends \moodleform {
                         'videoassessment' => $this->_customdata->videoassessment->id,
                         'submission' => $this->_customdata->submission->id,
                         'type' => $timing . $this->_customdata->va->get_grader_type($this->_customdata->submission),
-                        'userid' => $USER->id
+                        'userid' => $USER->id,
                 ))) {
             if ($grade = $DB->get_record('videoassessment_grades', array('gradeitem' => $gradeitem->id))) {
                 return $grade->grade;
