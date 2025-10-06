@@ -196,6 +196,10 @@ $string['videoassessment:grade'] = 'Grade video assessment';
 $string['videoassessment:gradepeer'] = 'Grade peer video assessment';
 $string['videoassessment:submit'] = 'Submit video assessment';
 $string['videoassessment:view'] = 'View video assessment';
+$string['videoassessment:viewcomments'] = 'View assessment comments';
+$string['videoassessment:fetchcourses'] = 'Access course list for video publishing';
+$string['videoassessment:fetchsections'] = 'Access course sections for video publishing';
+$string['videoassessment:managesorting'] = 'Manage student sorting order';
 $string['videoassessmentname'] = 'Video assessment name';
 $string['videoformat'] = 'Video format';
 $string['videoformatdesc'] = 'Video format';
@@ -289,9 +293,9 @@ $string['notifications'] = 'Notifications';
 $string['notificationssendtype'] = 'Notification carrier';
 $string['notificationcontenttypegroup'] = 'Notification content';
 
-$string['fairnessbonus'] = '+PeerFairness<br>bonus';
-$string['selffairnessbonus'] = '+SelfFairness<br>bonus';
-$string['finalscore'] = 'Final score';
+$string['peerfairnessbonusfortable'] = '+PeerFairness<br>bonus';
+$string['selffairnessbonusfortable'] = '+SelfFairness<br>bonus';
+$string['finalscorefortable'] = 'Final score';
 $string['reminder_notifition_mail_cron'] = 'reminder notifition mail cron';
 $string['uploadfile'] = 'Upload Video File';
 $string['uploadmessage'] = 'Your video file is over 500MB. Please retake the video at a lower resolution or re-upload a smaller file';
@@ -335,8 +339,8 @@ $string['advancedgradingmethodsgroup'] = 'Grading Methods';
 $string['advancedgradingmethodsgroup_help'] = 'For video assessment, do not change the default settings here for “Grading Method”. All settings use rubric, because that is the best method of performance assessment. If you change the settings, the video assessment system may not work.';
 $string['classgrading'] = 'Whole Class Grading';
 $string['classgrading_help'] = 'If you want the whole class of students to watch a live performance and assess it in real time, use this feature. To turn on whole class grading, click ‘Open Class Grading’.  The default is “Close class grading”.  All the student’s grades will be totaled into one average grade.';
-$string['fairnessbonus'] = 'Peer Fairness Bonus';
-$string['fairnessbonus_help'] = 'The Peer Fairness bonus rewards students who score ‘fairly’, that is, their scores are not all ‘100s” or “0s” and fairly close to what the teacher is scoring. The options for setting up this tool include deciding how much of a bonus (% of final score) you will assign, and how much of that bonus students will receive based on proximity to the teachers score.';
+$string['peerfairnessbonus'] = 'Peer Fairness Bonus';
+$string['peerfairnessbonus_help'] = 'The Peer Fairness bonus rewards students who score ‘fairly’, that is, their scores are not all ‘100s” or “0s” and fairly close to what the teacher is scoring. The options for setting up this tool include deciding how much of a bonus (% of final score) you will assign, and how much of that bonus students will receive based on proximity to the teachers score.';
 $string['selffairnessbonus'] = 'Self Fairness Bonus';
 $string['selffairnessbonus_help'] = 'The Self Fairness bonus rewards students who score ‘fairly’, that is, their scores are not all ‘100s” or “0s” and fairly close to what the teacher is scoring. The options for setting up this tool include deciding how much of a bonus (% of final score) you will assign, and how much of that bonus students will receive based on proximity to the teachers score.';
 $string['uploadfile_help'] = 'There are two stages: Uploading the file, and then converting the file. The converting process compresses the file to 1/10th the size. Sometimes this takes a long time—over ten minutes. Please check if your camera is set on 4K, which is too high, and lower the resolution and lower the fps. VGA or 720hd, 30fps is better.';
@@ -457,6 +461,22 @@ $string['videoassessmentnotfound'] = 'Video assessment not found';
 $string['submission'] = 'Submission';
 $string['invalidid'] = 'Invalid ID';
 $string['coursemisconf'] = 'Course setting is incorrect.';
+
+$string['stoprecording'] = 'Stop Recording';
+$string['resumerecording'] = 'Resume Recording';
+$string['errorcapturingmedia'] = 'Error capturing media:';
+
+$string['totalscore'] = 'Total    Score';
+$string['finalscore'] = 'Final    Score';
+$string['fairnessbonus'] = 'Fairness Bonus';
+
+$string['videonotfound'] = 'Video not found.';
+$string['average'] = 'Average';
+$string['notgradedyet'] = 'Not graded yet.';
+
+$string['videoassessmentnotfound'] = 'Video assessment not found.';
+$string['invaliduploadedfile'] = 'Uploaded file is invalid.';
+$string['invalidtoken'] = 'Invalid token.';
 
 /* privacy:metadata */
 $string['privacy:metadata:videoassessment'] = 'Information about the videoassessment files.';

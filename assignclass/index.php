@@ -45,6 +45,7 @@ if (optional_param('sort', null, PARAM_INT) !== null && optional_param('id', nul
 
     $course = $DB->get_record('course', array('id' => $cm->course));
     $context = \context_module::instance($cm->id);
+    require_capability('mod/videoassessment:managesorting', $context);
     $va = new \mod_videoassessment\va($context, $cm, $course);
 
     if ($sort == assign_class::SORT_MANUALLY) {
@@ -76,21 +77,14 @@ if (optional_param('sort', null, PARAM_INT) !== null && optional_param('id', nul
 
             $i = 1;
             $studentsdata = [];
-            foreach ($students as $k => $student) {
+            foreach ($students as $student) {
 
                 if (!empty($student->orderid)) {
-                    $sql = "
-                        UPDATE {videoassessment_sort_order} vso
-                        SET vso.sortorder = :order
-                        WHERE vso.id = :id
-                    ";
-
-                    $params = [
-                        'order' => $i,
+                    $object = (object)[
                         'id' => $student->orderid,
+                        'sortorder'  => $i,
                     ];
-
-                    $DB->execute($sql, $params);
+                    $DB->update_record('videoassessment_sort_order', $object);
                 } else {
                     $object = new \stdClass();
                     $object->sortitemid = $sortitemid;
@@ -145,9 +139,9 @@ if (optional_param('sort', null, PARAM_INT) !== null && optional_param('id', nul
 
 $course = $DB->get_record('course', array('id' => $cm->course));
 $context = \context_module::instance($cm->id);
-$va = new \mod_videoassessment\va($context, $cm, $course);
+require_capability('mod/videoassessment:managesorting', $context);
 
-$va->teacher_only();
+$va = new \mod_videoassessment\va($context, $cm, $course);
 
 $PAGE->requires->css('/mod/videoassessment/font/font-awesome/css/font-awesome.min.css');
 $PAGE->requires->jquery();
@@ -156,7 +150,7 @@ $PAGE->requires->js_call_amd('mod_videoassessment/assignclass', 'assignclassSort
 $url = new \moodle_url('/mod/videoassessment/assignclass/index.php', array('id' => $cm->id, 'groupid' => $groupid));
 $PAGE->set_url($url);
 
-$students = $va->get_students_sort(true);
+$students = $va->get_students_sort($groupid, true);
 
 $groups = $DB->get_records('groups', array('courseid' => $course->id), '', 'id, name');
 
@@ -218,18 +212,11 @@ if ($data = $form->get_data()) {
             $i = 1;
 
             foreach ($orderidarr as $orderid) {
-                $sql = "
-                    UPDATE {videoassessment_sort_order} vso
-                    SET vso.sortorder = :order
-                    WHERE vso.id = :id
-                ";
-
-                $params = array(
-                    'order' => $i,
+                $object = (object)[
                     'id' => $orderid,
-                );
-
-                $DB->execute($sql, $params);
+                    'sortorder'  => $i,
+                ];
+                $DB->update_record('videoassessment_sort_order', $object);
                 $i++;
             }
         }

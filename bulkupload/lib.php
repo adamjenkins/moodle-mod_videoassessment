@@ -397,7 +397,7 @@ class videoassessment_bulkupload {
         $fs = get_file_storage();
         $files = $fs->get_area_files($this->context->id, 'mod_videoassessment', 'video');
         $files = array_filter($files, function (stored_file $file) {
-            return !$file->is_directory() && preg_match(videoassessment_base::RE_VIDEOEXT, $file->get_filename());
+            return !$file->is_directory() && preg_match('/\.(mp4|mov|avi|webm|ogv|flv|mkv)$/i', $file->get_filename());
         });
         uasort($files, function ($lhs, $rhs)
         {

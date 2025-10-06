@@ -356,10 +356,10 @@ class grade_table {
                 $orderstr .= ' DESC';
             }
 
-            $peers = $this->va->get_peers_sort($groupid, $USER->id, false, $orderstr);
+            $peers = $this->va->get_peers_sort( $USER->id, $groupid, false, $orderstr);
         } else {
             if ($sort == assign_class::SORT_MANUALLY) {
-                $peers = $this->va->get_peers_sort($groupid, $USER->id, true);
+                $peers = $this->va->get_peers_sort( $USER->id, $groupid,  true);
             } else {
                 if (in_array($sort, array(assign_class::SORT_ID, assign_class::SORT_NAME))) {
                     if ($sort == assign_class::SORT_ID) {
@@ -371,7 +371,7 @@ class grade_table {
                     $orderstr = '';
                 }
 
-                $peers = $this->va->get_peers_sort($groupid, $USER->id, false, $orderstr);
+                $peers = $this->va->get_peers_sort( $USER->id, $groupid, false, $orderstr);
             }
         }
 
@@ -642,15 +642,15 @@ class grade_table {
         $row1[$s + $n + 6] = get_string('total', 'videoassessment');
 
         if ($this->va->va->fairnessbonus == 1 && $this->va->va->selffairnessbonus == 0) {
-            $row1[$s + $n + 7] = get_string('fairnessbonus', 'videoassessment');
-            $row1[$s + $n + 8] = get_string('finalscore', 'videoassessment');
+            $row1[$s + $n + 7] = get_string('peerfairnessbonusfortable', 'videoassessment');
+            $row1[$s + $n + 8] = get_string('finalscorefortable', 'videoassessment');
         } else if ($this->va->va->fairnessbonus == 0 && $this->va->va->selffairnessbonus == 1) {
-            $row1[$s + $n + 7] = get_string('selffairnessbonus', 'videoassessment');
-            $row1[$s + $n + 8] = get_string('finalscore', 'videoassessment');
+            $row1[$s + $n + 7] = get_string('selffairnessbonusfortable', 'videoassessment');
+            $row1[$s + $n + 8] = get_string('finalscorefortable', 'videoassessment');
         } else if ($this->va->va->fairnessbonus == 1 && $this->va->va->selffairnessbonus == 1) {
-            $row1[$s + $n + 7] = get_string('selffairnessbonus', 'videoassessment');
-            $row1[$s + $n + 8] = get_string('fairnessbonus', 'videoassessment');
-            $row1[$s + $n + 9] = get_string('finalscore', 'videoassessment');
+            $row1[$s + $n + 7] = get_string('selffairnessbonusfortable', 'videoassessment');
+            $row1[$s + $n + 8] = get_string('peerfairnessbonusfortable', 'videoassessment');
+            $row1[$s + $n + 9] = get_string('finalscorefortable', 'videoassessment');
         }
         $params = array('id' => $this->cm->id);
         $group = optional_param('group', null, PARAM_INT);

@@ -27,7 +27,8 @@ define([
     'core/modal_factory',
     'core/modal_events',
     'core/notification',
-], function ($, Str, ModalFactory, ModalEvents, Notification) {
+    'core/ajax',
+], function ($, Str, ModalFactory, ModalEvents, Notification, Ajax) {
     'use strict';
 
     const SELECTORS = {
@@ -41,46 +42,44 @@ define([
 
     const mobileshowallcomment = () => {
         $(SELECTORS.commentButton).on('click', function () {
-            const data = {
-                ajax: 1,
-                userid: $(this).attr('userid'),
-                timing: $(this).attr('timing'),
-                cmid: $(this).attr('cmid'),
-                id: $(this).attr('id'),
-                action: 'getallcomments',
+            const request = {
+                methodname: 'mod_videoassessment_get_getallcomments',
+                args: {
+                    ajax: 1,
+                    action: 'getallcomments',
+                    userid: $(this).attr('userid'),
+                    timing: $(this).attr('timing'),
+                    cmid: $(this).attr('cmid'),
+                    id: $(this).attr('id')
+                }
             };
 
-            $.post('/mod/videoassessment/view.php', data)
-                .done((response) => {
-                    let json;
-                    try {
-                        json = typeof response === 'string' ? $.parseJSON(response) : response;
-                    } catch (e) {
-                        return Notification.exception(e);
-                    }
-
-                    if (json.html) {
+            Ajax.call([request])[0]
+                .then((response) => {
+                    if (response.html) {
                         ModalFactory.create({
                             type: ModalFactory.types.CANCEL,
-                            title: '<h1>General Comments</h1>',
-                            body: json.html,
+                            title: `<h1>${M.str.videoassessment.generalcomments}</h1>`,
+                            body: response.html,
                         }).then(modal => modal.show())
                             .catch(Notification.exception);
                     }
                 })
-                .fail(Notification.exception);
+                .catch(Notification.exception);
         });
     };
 
     const init_message_sent_window = (messageSent) => {
         if (parseInt(messageSent, 10) === 1) {
-            ModalFactory.create({
-                type: ModalFactory.types.DEFAULT,
-                title: '',
-                body: '<h2>' + M.util.get_string('notificationmessagesent', 'videoassessment') + '</h2>',
-            }).then(modal => {
-                modal.show();
-                setTimeout(() => modal.hide(), 2000);
+            Str.get_string('notificationmessagesent', 'videoassessment').then((message) => {
+                ModalFactory.create({
+                    type: ModalFactory.types.DEFAULT,
+                    title: '',
+                    body: `<h2>${message}</h2>`,
+                }).then(modal => {
+                    modal.show();
+                    setTimeout(() => modal.hide(), 2000);
+                }).catch(Notification.exception);
             }).catch(Notification.exception);
         }
     };
@@ -139,7 +138,7 @@ define([
             };
 
             if (!videoFile) {
-                $(SELECTORS.videoError).text('Please upload a video').show();
+                $(SELECTORS.videoError).text(M.str.videoassessment.erroruploadvideo).show();
                 return false;
             }
 

@@ -124,14 +124,14 @@ class mod_videoassessment_mod_form extends moodleform_mod {
         $mform->setDefault('class', 0);
         $mform->addElement(
             'select',
-            'fairnessbonus',
-            get_string('fairnessbonus', 'videoassessment'),
+            'peerfairnessbonus',
+            get_string('peerfairnessbonus', 'videoassessment'),
             [
                 '0' => get_string('no', 'videoassessment'),
                 '1' => get_string('yes', 'videoassessment'),
             ],
         );
-        $mform->addHelpButton('fairnessbonus', 'fairnessbonus', 'videoassessment');
+        $mform->addHelpButton('peerfairnessbonus', 'peerfairnessbonus', 'videoassessment');
         $bonuspercentage = [];
         for ($i = 0; $i <= 100; $i++) {
             $bonuspercentage[$i] = $i . '%';

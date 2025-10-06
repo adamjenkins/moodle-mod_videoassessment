@@ -338,12 +338,12 @@ class mod_videoassessment_external extends external_api {
      */
     public static function assignclass_sort_group_parameters() {
         return new external_function_parameters(
-            array(
-                'action' => new external_value(PARAM_ALPHANUM, 'Which action it will create'),
-                'sort' => new external_value(PARAM_INT, 'Activity which user belongs to'),
-                'groupid' => new external_value(PARAM_INT, 'Time of activity'),
-                'id' => new external_value(PARAM_INT, 'Time of activity'),
-            )
+            [
+                'action'  => new external_value(PARAM_ALPHANUM, 'Action type'),
+                'sort'    => new external_value(PARAM_INT, 'Sorting method (manual, name, or ID)'),
+                'groupid' => new external_value(PARAM_INT, 'Group ID'),
+                'id'      => new external_value(PARAM_INT, 'Course module ID'),
+            ]
         );
     }
 
@@ -362,6 +362,7 @@ class mod_videoassessment_external extends external_api {
      * @throws Exception If database transaction fails
      */
     public static function assignclass_sort_group($action, $sort, $groupid, $id) {
+        global $CFG, $PAGE, $DB, $OUTPUT;
 
         $params = self::validate_parameters(
             self::assignclass_sort_group_parameters(),
@@ -375,18 +376,16 @@ class mod_videoassessment_external extends external_api {
         $sort = $params['sort'];
         $groupid = $params['groupid'];
         $id = $params['id'];
-        global $CFG, $PAGE, $DB;
 
         $cm = get_coursemodule_from_id('videoassessment', $id, 0, false, MUST_EXIST);
-
-        $course = $DB->get_record('course', array('id' => $cm->course));
-
+        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
         $context = \context_module::instance($cm->id);
+
         self::validate_context($context);
         require_capability('mod/videoassessment:managesorting', $context);
 
         $PAGE->set_context($context);
-        $va = new va($context, $cm, $course);
+        $va = new \mod_videoassessment\va($context, $cm, $course);
 
         if ($sort == assign_class::SORT_MANUALLY) {
 
@@ -406,99 +405,70 @@ class mod_videoassessment_external extends external_api {
                 $sortitem = $DB->get_record('videoassessment_sort_items', array('type' => $type, 'itemid' => $itemid));
 
                 if (!$sortitem) {
-                    $object = new \stdClass();
-                    $object->type = $type;
-                    $object->itemid = $itemid;
-                    $object->sortby = 0;
+                    $object = (object)[
+                        'type'   => $type,
+                        'itemid' => $itemid,
+                        'sortby' => 0,
+                    ];
                     $sortitemid = $DB->insert_record('videoassessment_sort_items', $object);
                 } else {
                     $sortitemid = $sortitem->id;
                 }
 
                 $i = 1;
-                $html = '<ul id="manually-list">';
-                foreach ($students as $k => $student) {
+                $studentsdata = [];
+                foreach ($students as $student) {
 
                     if (!empty($student->orderid)) {
-                        $sql = "
-							UPDATE {videoassessment_sort_order} vso
-							SET vso.sortorder = :order
-							WHERE vso.id = :id
-						";
-
-                        $params = array(
-                            'order' => $i,
+                        $object = (object)[
                             'id' => $student->orderid,
-                        );
-
-                        $DB->execute($sql, $params);
+                            'sortorder'  => $i,
+                        ];
+                        $DB->update_record('videoassessment_sort_order', $object);
                     } else {
-                        $object = new \stdClass();
-                        $object->sortitemid = $sortitemid;
-                        $object->userid = $student->id;
-                        $object->sortorder = $i;
-
+                        $object = (object)[
+                            'sortitemid' => $sortitemid,
+                            'userid'     => $student->id,
+                            'sortorder'  => $i,
+                        ];
                         $student->orderid = $DB->insert_record('videoassessment_sort_order', $object);
                     }
 
-                    $html .= '<li data-orderid="' . $student->orderid . '" class="clearfix">';
-                    $html .= '<div class="name">' . fullname($student) . '</div>';
-                    $html .= '</li>';
+                    $studentsdata[] = [
+                        'orderid'  => $student->orderid,
+                        'fullname' => fullname($student),
+                    ];
                     $i++;
                 }
 
                 $transaction->allow_commit();
             } catch (Exception $e) {
                 $transaction->rollback($e);
+                throw $e;
             }
 
-            $html .= '</ul><div id="manually-hidden"></div>';
-            $html .= "<script type='text/javascript' src='{$CFG->wwwroot}/mod/videoassessment/jquery-sortable.js'></script>";
-            $html .= "<script type='text/javascript'>";
-            $html .= "
-			group = $('#manually-list').sortable({
-					group: 'manually-list',
-					onDrop: function(item, container, _super) {
-						var data = group.sortable('serialize').get();
-
-						var html = '';
-						for (x in data[0]) {
-							var obj = data[0][x];
-							html += '<input type=\"hidden\" name=\"orderid[]\" value=\"' + obj.orderid + '\" />';
-						}
-
-						$('#manually-hidden').html(html);
-
-						_super(item, container);
-					}
-				});
-			";
-            $html .= "</script>";
+            $templatecontext = ['students' => $studentsdata];
+            $html = $OUTPUT->render_from_template('mod_videoassessment/assignclass_manual_list', $templatecontext);
         } else {
-            $ordersql = '';
-            if ($sort == assign_class::SORT_NAME) {
-                $ordersql .= ' ORDER BY CONCAT(u.firstname, " ", u.lastname)';
-            } else {
-                $ordersql .= ' ORDER BY u.id';
-            }
-
+            $ordersql = ($sort == assign_class::SORT_NAME)
+                ? ' ORDER BY CONCAT(u.firstname, " ", u.lastname)'
+                : ' ORDER BY u.id';
             $ordersql .= ' ASC';
 
             $students = $va->get_students_sort($groupid, false, $ordersql);
 
-            $html = '<ul class="id_order_students">';
-            foreach ($students as $k => $student) {
-                $html .= '<li class="clearfix">';
-                $html .= '<div class="name">' . fullname($student) . '</div>';
-                $html .= '</li>';
+            $studentsdata = [];
+            foreach ($students as $student) {
+                $studentsdata[] = [
+                    'fullname' => fullname($student),
+                ];
             }
 
-            $html .= '</ul>';
+            $templatecontext = ['students' => $studentsdata];
+            $html = $OUTPUT->render_from_template('mod_videoassessment/assignclass_auto_list', $templatecontext);
         }
 
-        $data = array();
-        $data['html'] = $html;
-        return $data;
+        return ['html' => $html];
     }
 
     /**

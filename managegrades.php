@@ -65,7 +65,6 @@ class page_manage_grades extends page {
 
         $PAGE->requires->js_call_amd('mod_videoassessment/module', 'manageGradesInit');
         $PAGE->requires->strings_for_js(array('confirmdeletegrade'), va::VA);
-        ;
 
         $userid = required_param('userid', PARAM_INT);
 
@@ -132,7 +131,7 @@ class page_manage_grades extends page {
                         $average = array_sum($grades) / count($grades);
                     }
                     $table->data[] = array(
-                        'Average',
+                        get_string('average', 'videoassessment'),
                         '',
                         $average,
                         '',
@@ -140,7 +139,7 @@ class page_manage_grades extends page {
                     );
                     echo \html_writer::table($table);
                 } else {
-                    echo \html_writer::tag('div', 'Not graded yet.', array('style' => 'text-align: center'));
+                    echo \html_writer::tag('div', get_string('notgradedyet', 'videoassessment'), array('style' => 'text-align: center'));
                 }
             }
         }

@@ -19,6 +19,13 @@ namespace mod_videoassessment\output;
 use plugin_renderer_base;
 use renderable;
 use mod_videoassessment\va;
+use mod_videoassessment\video;
+use filter_mediaplugin;
+use moodle_url;
+use html_table;
+use html_table_row;
+use html_table_cell;
+use html_writer;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -130,7 +137,7 @@ class renderer extends plugin_renderer_base {
      * @param \mod_videoassessment\video $video Video object to render
      * @return string HTML content for the video player
      */
-    public function render_videoassess_video(mod_videoassessment\video $video) {
+    public function render_mod_videoassessment_video(video $video) {
         global $CFG;
 
         if ($CFG->release < 2012062500) {
@@ -150,17 +157,19 @@ class renderer extends plugin_renderer_base {
         }
 
         $url = (string)$url;
-        @$alt = $this->alt ?: $url;
+        @$alt = $this->alt ?? $url;
 
-        $width = !empty($video->width) ? $video->width : 400;
-        $height = !empty($video->height) ? $video->height : 300;
+        // Use width and height from $video->data if available, otherwise default.
+        $width = !empty($video->data->width) ? $video->data->width : 400;
+        $height = !empty($video->data->height) ? $video->data->height : 300;
 
         $dim = is_numeric($width) && is_numeric($height) && $width > 0 && $height > 0
         ? sprintf('#d=%dx%d', $width, $height)
         : '';
 
-        $filter = new filter_mediaplugin($this->va->context, array());
-        if (mod_videoassessment\va::check_mp4_support()) {
+        // Use the video object's context instead of $this->va (which may not exist here).
+        $filter = new filter_mediaplugin($video->context, array());
+        if (va::check_mp4_support()) {
             // Browsers supporting the MP4 format use the HTML5 <video> tag.
             $prevfiltermediapluginenablehtml5video = !empty($CFG->filtermediapluginenablehtml5video);
             $CFG->filtermediapluginenablehtml5video = true;
@@ -201,7 +210,7 @@ class renderer extends plugin_renderer_base {
      * @param va $va Video assessment instance object
      * @return string HTML content for status information table
      */
-    public function render_videoassess_info_status($va) {
+    public function render_mod_videoassessment_info_status($va) {
         $o = '';
         if ($va->allowsubmissionsfromdate != 0 || $va->duedate != 0 || $va->cutoffdate != 0) {
             $o .= $this->output->container_start('submissionstatustable');

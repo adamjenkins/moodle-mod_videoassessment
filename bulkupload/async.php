@@ -33,7 +33,7 @@ try {
     // To avoid any unauthorized external request.
     // Only accept internal ajax request with valid token.
     if ($token !== md5($file . get_site_identifier())) {
-        throw new moodle_exception('invalidtoken', 'error');
+        throw new moodle_exception('invalidtoken', 'videoassessment');
     }
 
     $bulkupload = new videoassessment_bulkupload($cmid);

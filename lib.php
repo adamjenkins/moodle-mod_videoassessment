@@ -316,15 +316,16 @@ function videoassessment_grading_areas_list() {
 function mod_videoassessment_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
     global $CFG, $DB;
 
-    $fullpath = "/{$context->id}/mod_videoassessment/$filearea/" . implode('/', $args);
-
-    $fs = get_file_storage();
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+    // Allow Self Assessment/Peer Assessment to view other people's files.
+    if (!has_capability('mod/videoassessment:gradepeer', $context)) {
         send_file_not_found();
     }
 
-    // Allow Self Assessment/Peer Assessment to view other people's files.
-    if (!has_capability('mod/videoassessment:gradepeer', $context)) {
+    $fullpath = "/{$context->id}/mod_videoassessment/$filearea/" . implode('/', $args);
+
+    $fs = get_file_storage();
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file || $file->is_directory()) {
         send_file_not_found();
     }
 

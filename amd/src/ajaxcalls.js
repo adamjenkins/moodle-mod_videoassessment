@@ -42,7 +42,7 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/modal_factory'],
                 if (res) {
                     $.when(ModalFactory.create({
                         type: ModalFactory.types.CANCEL,
-                        title: '<h1>' + M.util.get_string('generalcomments', 'videoassessment') +'</h1>',
+                        title: `<h1>${M.str.videoassessment.generalcomments}</h1>`,
                         body: res,
                     })).then(function (modal) {
                         modal.show();
@@ -58,7 +58,6 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/modal_factory'],
                 fail: notification.exception
             }]);
             promises[0].then(function (data) {
-                //let res = $.parseJSON(data.html);
                 if (data.html) {
                     $('#publish-course').html(data.html);
                     $('#publish-course').trigger('change');
@@ -73,7 +72,6 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/modal_factory'],
                 fail: notification.exception
             }]);
             promises[0].then(function (data) {
-                //let res = $.parseJSON(data.html);
                 if (data.html) {
                     $('#publish-section').html(data.html);
                     $('#publish-section').removeAttr('disabled');
@@ -90,7 +88,6 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/modal_factory'],
                 fail: notification.exception
             }]);
             promises[0].then(function (data) {
-                //let res = $.parseJSON(data.html);
                 if (sort == 3) {
                     $('#sortby').data('load', 1);
                 }

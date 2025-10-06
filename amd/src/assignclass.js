@@ -28,7 +28,6 @@ define(['jquery'], function ($) {
                 var groupid = $('#separate-group').val();
 
                 var id = $('.sort-form input[type="hidden"][name="id"]').val();
-                // var url = $('.sort-form').attr('action');
                 var loadingIcon = '<div class="loading-icon">' +
                     '<i class="fa fa-refresh fa-spin fa-3x fa-fw margin-bottom"></i>' +
                     '</div>';
@@ -37,7 +36,7 @@ define(['jquery'], function ($) {
                 var ajaxacsg = new ajaxx();
                 ajaxacsg.assignclasssortgroup("assignclasssortgroup", sort, groupid, id);
             });
-            /* Load sort manually list */
+            // Load sort manually list.
             $('#sortby').change(function () {
                 var t = $(this);
                 var sort = $('#sortby').val();

@@ -24,439 +24,448 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['addmember'] = 'Add a member';
-$string['addpeer'] = 'Add peer...';
-$string['addpeergroup'] = 'Add a peer group';
-$string['after'] = 'After';
-$string['aftergrade'] = 'After grade';
-$string['afterlabel'] = 'After';
-$string['aftermarks'] = 'After scores';
-$string['afterpeer'] = 'After - peer';
-$string['afterself'] = 'After - self';
-$string['afterteacher'] = 'After - teacher';
-$string['aftervideo'] = 'After video';
-$string['allowstudentpeerselection'] = 'Allow students to select peers';
-$string['allowstudentpeerselection_help'] = 'If enabled, students can select peer partners by themselves.';
-$string['allowstudentupload'] = 'Students can upload videos';
-$string['allowstudentupload_help'] = 'If enabled, students can upload videos one by one. Bulk upload is available only for teachers.';
-$string['allscores'] = '</span><span class="red">Self,</span> <span class="blue">Peer,</span> <span class="green">Teacher,</span> <span class="orange"> and Class</span> Scores';
-$string['assess'] = 'Assess';
-$string['assess_help'] = 'In the assess stage, students do self-assessment, peer assessment with the rubrics set up in Advanced Grading.  It is also possible to give a student the right to design a rubric by giving one of them ‘teacher-rights’ or by designing a rubric on paper for the teacher to input. By default, students cannot see the teacher’s scoring until after completing self assessment. Then students can view the teacher’s assessment.';
-$string['assessagain'] = 'Assess again';
-$string['assessedby'] = 'Assessed by';
-$string['assignpeers'] = 'Assign peers';
-$string['assignpeers_help'] = 'From zero to three peers can be assigned for peer assessment. One peer is the default. There are three methods to assign peers: 1) randomly across the course, 2) randomly across a group, and 3) manually. Both ways of random assignments can be adjusted manually after being auto-assigned.';
-$string['assignpeersrandomly'] = 'Assign peers randomly';
-$string['associate'] = 'Associate';
-$string['associate_help'] = 'After uploading files, each video file must be associated to the correct performing student. The file is matched by selecting one student by their moodle login name (user) in the course. This is called the “associate” phase in the process (after “upload” and before “assess”). In this screen, a drop-down menu lists all the students (users) in the course (or in the section of the course).';
-$string['associated'] = 'Associated';
-$string['associations'] = 'Associations';
-$string['availabledate'] = 'Available from';
+$string['addmember'] = 'メンバーを追加';
+$string['addpeer'] = 'ピアを追加...';
+$string['addpeergroup'] = 'ピアグループを追加';
+$string['after'] = '後';
+$string['aftergrade'] = '後評価';
+$string['afterlabel'] = '後';
+$string['aftermarks'] = '後スコア';
+$string['afterpeer'] = '後 - ピア';
+$string['afterself'] = '後 - 自己';
+$string['afterteacher'] = '後 - 教師';
+$string['aftervideo'] = '後ビデオ';
+$string['allowstudentpeerselection'] = '学生がピアを選択できるようにする';
+$string['allowstudentpeerselection_help'] = '有効にすると、学生は自分でピアパートナーを選択できます。';
+$string['allowstudentupload'] = '学生がビデオをアップロードできる';
+$string['allowstudentupload_help'] = '有効にすると、学生はビデオを1つずつアップロードできます。一括アップロードは教師のみ利用可能です。';
+$string['allscores'] = '</span><span class="red">自己、</span> <span class="blue">ピア、</span> <span class="green">教師、</span> <span class="orange">クラス</span>スコア';
+$string['assess'] = '評価';
+$string['assess_help'] = '評価段階では、学生は高度な評価で設定されたルーブリックを使用して自己評価、ピア評価を行います。学生に「教師権限」を与えるか、教師が入力するためのルーブリックを紙で設計することで、学生にルーブリックを設計する権利を与えることも可能です。デフォルトでは、学生は自己評価を完了するまで教師の採点を見ることができません。その後、学生は教師の評価を閲覧できます。';
+$string['assessagain'] = '再評価';
+$string['assessedby'] = '評価者';
+$string['assignpeers'] = 'ピアを割り当て';
+$string['assignpeers_help'] = 'ピア評価のために0〜3人のピアを割り当てることができます。デフォルトは1人のピアです。ピアを割り当てる方法は3つあります：1）コース全体でランダム、2）グループ内でランダム、3）手動。ランダム割り当ての両方の方法は、自動割り当て後に手動で調整できます。';
+$string['assignpeersrandomly'] = 'ピアをランダムに割り当て';
+$string['associate'] = '関連付け';
+$string['associate_help'] = 'ファイルをアップロードした後、各ビデオファイルは正しいパフォーマンス学生に関連付ける必要があります。ファイルは、コース内の学生のMoodleログイン名（ユーザー）を選択することでマッチングされます。これはプロセスの「関連付け」段階と呼ばれます（「アップロード」の後、「評価」の前）。この画面では、ドロップダウンメニューにコース（またはコースのセクション）内のすべての学生（ユーザー）がリストされます。';
+$string['associated'] = '関連付け済み';
+$string['associations'] = '関連付け';
+$string['availabledate'] = '利用可能日';
 $string['backupdefaults'] = 'バックアップデフォルト';
 $string['backupusers'] = 'ユーザデータを含む';
 $string['backupusersdesc'] = 'バックアップにユーザデータ (ビデオ、評定) を含むかどうか、デフォルトを設定します。';
-$string['before'] = 'Before';
-$string['beforeafter'] = 'Before/after';
-$string['beforegrade'] = 'Before grade';
-$string['beforelabel'] = 'Before';
-$string['beforemarks'] = 'Before scores';
-$string['beforepeer'] = 'Peer';
-$string['beforeself'] = 'Self';
-$string['beforeteacher'] = 'Teacher';
-$string['beforeclass'] = 'Class';
-$string['beforevideo'] = 'Before video';
-$string['bulkvideoupload'] = 'Bulk video upload';
-$string['confirmdeletegrade'] = 'Are you sure you want to delete this grade?';
-$string['confirmdeletevideos'] = 'Are you sure you want to delete {$a} videos?';
-$string['course'] = 'course';
-$string['currentgrade'] = 'Current grade in gradebook';
-$string['delayedteachergrade'] = 'Delayed Teacher Grade';
-$string['delayedteachergrade_help'] = 'If enabled ‘yes’, the teacher assessment ratings will not be shown to the student, until he/she has completed his/her self assessment. This will alleviate any bias in student scoring by not seeing a teacher score before they start assessing.';
-$string['deleteselectedvideos'] = 'Delete selected videos';
-$string['deletevideo'] = 'Delete video';
-$string['deletevideos'] = 'Bulk Video Deletion';
-$string['deletevideos_help'] = 'A teacher can delete multiple files this way.';
-$string['deletevideos_videos'] = 'Videos';
-$string['deletevideos_videos_help'] = 'All selected videos are deleted from the activity. Video data on the server will be cleaned up by Moodle cron.';
-$string['description'] = 'Description';
-$string['disassociate'] = 'Disassociate';
-$string['diskspacetmpl'] = 'Server disk space: {$a->free} free / {$a->total} total';
-$string['downloadexcel'] = 'Download results in Excel';
-$string['duedate'] = 'Due date';
-$string['errorcheckvideostodelete'] = 'Check videos to delete.';
-$string['errorinvalidtiming'] = 'Invalid timing value';
-$string['erroruploadvideo'] = 'Please upload a video';
-$string['existingcourse'] = 'Publish to an existing course';
-$string['existingcourse_help'] = 'If set to other than (New), videos will be published to the selected course. You need to be able to add resources to the course.';
-$string['feedback'] = 'Feedback';
-$string['feedbackfrom'] = 'Feedback from {$a}';
-$string['ffmpegcommand'] = 'FFmpeg command';
-$string['ffmpegcommanddesc'] = 'FFmpeg command line with placeholders: {INPUT} {OUTPUT}';
-$string['ffmpegthumbnailcommand'] = 'FFmpeg thumbnail command';
-$string['ffmpegthumbnailcommanddesc'] = 'FFmpeg command line with placeholders: {INPUT} {OUTPUT}, with options to output an image';
-$string['filedeleted'] = 'File is deleted.';
-$string['firstassess'] = 'First assess';
-$string['grade'] = 'Grade';
-$string['group'] = 'group';
-$string['inputnewcoursename'] = 'Input a new course name';
-$string['level'] = 'Level';
-$string['liststudents'] = 'List students';
-$string['loading'] = 'Loading...';
-$string['managegrades'] = 'Manage grades';
-$string['manageuploadedvideos'] = 'Manage uploaded videos';
+$string['before'] = '前';
+$string['beforeafter'] = '前/後';
+$string['beforegrade'] = '前評価';
+$string['beforelabel'] = '前';
+$string['beforemarks'] = '前スコア';
+$string['beforepeer'] = 'ピア';
+$string['beforeself'] = '自己';
+$string['beforeteacher'] = '教師';
+$string['beforeclass'] = 'クラス';
+$string['beforevideo'] = '前ビデオ';
+$string['bulkvideoupload'] = '一括ビデオアップロード';
+$string['confirmdeletegrade'] = 'この成績を削除してもよろしいですか？';
+$string['confirmdeletevideos'] = '{$a}個のビデオを削除してもよろしいですか？';
+$string['course'] = 'コース';
+$string['currentgrade'] = '成績表の現在の成績';
+$string['delayedteachergrade'] = '教師評価の遅延';
+$string['delayedteachergrade_help'] = '「はい」を有効にすると、学生が自己評価を完了するまで、教師の評価は学生に表示されません。これにより、評価を開始する前に教師のスコアを見ることによる学生の採点の偏りを軽減します。';
+$string['deleteselectedvideos'] = '選択したビデオを削除';
+$string['deletevideo'] = 'ビデオを削除';
+$string['deletevideos'] = '一括ビデオ削除';
+$string['deletevideos_help'] = '教師はこの方法で複数のファイルを削除できます。';
+$string['deletevideos_videos'] = 'ビデオ';
+$string['deletevideos_videos_help'] = '選択されたすべてのビデオがアクティビティから削除されます。サーバー上のビデオデータはMoodle cronによってクリーンアップされます。';
+$string['description'] = '説明';
+$string['disassociate'] = '関連付け解除';
+$string['diskspacetmpl'] = 'サーバーディスク容量: {$a->free} 空き / {$a->total} 合計';
+$string['downloadexcel'] = 'Excelで結果をダウンロード';
+$string['duedate'] = '締切日';
+$string['errorcheckvideostodelete'] = '削除するビデオをチェックしてください。';
+$string['errorinvalidtiming'] = '無効なタイミング値';
+$string['erroruploadvideo'] = 'ビデオをアップロードしてください';
+$string['existingcourse'] = '既存のコースに公開';
+$string['existingcourse_help'] = '（新規）以外に設定すると、ビデオは選択されたコースに公開されます。コースにリソースを追加する権限が必要です。';
+$string['feedback'] = 'フィードバック';
+$string['feedbackfrom'] = '{$a}からのフィードバック';
+$string['ffmpegcommand'] = 'FFmpegコマンド';
+$string['ffmpegcommanddesc'] = 'プレースホルダー付きFFmpegコマンドライン: {INPUT} {OUTPUT}';
+$string['ffmpegthumbnailcommand'] = 'FFmpegサムネイルコマンド';
+$string['ffmpegthumbnailcommanddesc'] = 'プレースホルダー付きFFmpegコマンドライン: {INPUT} {OUTPUT}、画像出力オプション付き';
+$string['filedeleted'] = 'ファイルが削除されました。';
+$string['firstassess'] = '初回評価';
+$string['grade'] = '成績';
+$string['group'] = 'グループ';
+$string['inputnewcoursename'] = '新しいコース名を入力';
+$string['level'] = 'レベル';
+$string['liststudents'] = '学生一覧';
+$string['loading'] = '読み込み中...';
+$string['managegrades'] = '成績管理';
+$string['manageuploadedvideos'] = 'アップロードされたビデオを管理';
 $string['modulename'] = 'ビデオアセスメント';
-$string['modulenameplural'] = 'Video Assessments';
-$string['mp4boxcommand'] = 'MP4Box command';
-$string['mp4boxcommanddesc'] = 'MP4Box command which enables progressive playback of MP4 videos';
-$string['myvideos'] = 'My video';
-$string['nopeergroup'] = 'No peer groups yet';
-$string['notext'] = 'No text';
-$string['novideo'] = 'No video';
-$string['operations'] = 'Operations';
-$string['or'] = 'or';
-$string['originalname'] = 'Original name';
-$string['path'] = 'Path';
-$string['peer'] = 'Peer';
-$string['peerassessments'] = 'Peer assessments';
-$string['peergroup'] = 'Peer group';
-$string['peerratings'] = 'Peer ratings';
-$string['peers'] = 'Peers';
+$string['modulenameplural'] = 'ビデオアセスメント';
+$string['mp4boxcommand'] = 'MP4Boxコマンド';
+$string['mp4boxcommanddesc'] = 'MP4ビデオのプログレッシブ再生を可能にするMP4Boxコマンド';
+$string['myvideos'] = '私のビデオ';
+$string['nopeergroup'] = 'まだピアグループがありません';
+$string['notext'] = 'テキストなし';
+$string['novideo'] = 'ビデオなし';
+$string['operations'] = '操作';
+$string['or'] = 'または';
+$string['originalname'] = '元の名前';
+$string['path'] = 'パス';
+$string['peer'] = 'ピア';
+$string['peerassessments'] = 'ピア評価';
+$string['peergroup'] = 'ピアグループ';
+$string['peerratings'] = 'ピア評価';
+$string['peers'] = 'ピア';
 $string['pluginadministration'] = 'ビデオアセスメント管理';
 $string['pluginname'] = 'ビデオアセスメント';
-$string['preventlate'] = 'Prevent late submissions';
-$string['previewvideo'] = 'Preview video';
-$string['printrubrics'] = 'Print all rubric report';
-$string['printreport'] = 'Print report';
-$string['printview'] = 'Open print view';
-$string['publishvideos'] = 'Publish Videos';
-$string['publishvideos_help'] = 'In this stage, after all performances are assessed, a teacher can select videos for long term preservation. These videos will be published to a
-separate, newly created course in your site.';
-$string['publishvideos_videos'] = 'Videos';
-$string['publishvideos_videos_help'] = 'Selected videos will be published to an existing course or a new course.';
-$string['publishvideostocourse'] = 'Publish videos to a course';
-$string['ratingpeer'] = 'Peer weighting';
-$string['ratingpeer_help'] = 'Set the weighting of the peer grading within a student’s total grade. More than one peer can grade the student (up to 3), and the average score of the peers will be displayed. In reports, the peer’s scores are usually shown in the color ‘blue’.';
-$string['ratings'] = 'Ratings';
-$string['ratings_help'] = 'When combining self/peer/class/teacher assessments, a teacher can set the weighting of each type of assessment within 100%. Typical weightings might be Teacher-80%, Self-10%, Peer-10%, Class-0%. The total of the percentages must be 100%, or a warning will appear. If you wish for the teacher to be the only assessor, then set the percentages like this: Teacher-100%, Self-0%, Peer-0%, Class-0%.';
-$string['ratingself'] = 'Self weighting';
-$string['ratingself_help'] = 'Set the weighting of the self grading within a student’s total grade. Self assessment is often influenced by others” scores, so the teacher’s score is not shown until a student has completed her/his self assessment. The self scores are usually shown in the color ‘red’.';
-$string['ratingteacher'] = 'Teacher weighting';
-$string['ratingteacher_help'] = 'Set the weighting of the teacher’s grading of a student’s total grade. More than one teacher can grade the student, and the average score of the teachers will be displayed. If the teacher is the only rater, then this setting should be 100%, and all others 0%. The teacher’s scores are usually shown in the color ‘green’.';
-$string['reallydeletevideo'] = 'Are you sure you want to delete this video?';
-$string['reallyresetallpeers'] = 'This will reset peer assignments and re-assign randomly. Continue?';
-$string['remark'] = 'Remark';
-$string['report'] = 'Report';
-$string['retakevideo'] = 'Retake a video';
-$string['reuploadvideo'] = 'Re-upload a video';
-$string['Reembedthelink'] = 'Re-embed the link';
-$string['score'] = 'Score';
-$string['scores'] = 'Scores';
-$string['saveassociations'] = 'Save associations';
-$string['seereport'] = 'See report';
-$string['self'] = 'Self';
-$string['selfassessments'] = 'Self assessments';
-$string['selfratings'] = 'Self ratings';
-$string['settotalratingtoahundredpercent'] = 'Four ratings (Teacher + Self + Peer + Class) must equal 100%.';
-$string['singlevideoupload'] = 'Single video upload';
-$string['studentrubric'] = 'Student rubric';
-$string['submissionby'] = 'Submission by {$a}';
-$string['takevideo'] = 'Take a video';
-$string['teacher'] = 'Teacher';
-$string['teacherratings'] = 'Teacher ratings';
-$string['teacherrubric'] = 'Teacher rubric';
-$string['teacherselfpeer'] = 'Teacher/self/peer/class';
-$string['timing'] = 'Timing';
-$string['timinggrade'] = '{$a} grade';
-$string['timinglabel'] = 'Your word for before/after';
-$string['timinglabel_help'] = 'By inputting a word here, you can customize the labels for "before" and "after." If this is left blank, standard "before" and "after" are used.';
-$string['timingscores'] = '{$a} scores';
-$string['total'] = 'Total';
-$string['totalgrade'] = 'Total grade';
-$string['unassociated'] = 'Unassociated';
+$string['preventlate'] = '遅延提出を防ぐ';
+$string['previewvideo'] = 'ビデオをプレビュー';
+$string['printrubrics'] = 'すべてのルーブリックレポートを印刷';
+$string['printreport'] = 'レポートを印刷';
+$string['printview'] = '印刷ビューを開く';
+$string['publishvideos'] = 'ビデオを公開';
+$string['publishvideos_help'] = 'この段階では、すべてのパフォーマンスが評価された後、教師は長期保存のためにビデオを選択できます。これらのビデオは、サイト内の別の新しく作成されたコースに公開されます。';
+$string['publishvideos_videos'] = 'ビデオ';
+$string['publishvideos_videos_help'] = '選択されたビデオは既存のコースまたは新しいコースに公開されます。';
+$string['publishvideostocourse'] = 'コースにビデオを公開';
+$string['ratingpeer'] = 'ピア重み付け';
+$string['ratingpeer_help'] = '学生の総合成績におけるピア評価の重み付けを設定します。複数のピアが学生を評価でき（最大3人）、ピアの平均スコアが表示されます。レポートでは、ピアのスコアは通常「青」色で表示されます。';
+$string['ratings'] = '評価';
+$string['ratings_help'] = '自己/ピア/クラス/教師評価を組み合わせる際、教師は各評価タイプの重み付けを100%以内で設定できます。典型的な重み付けは教師80%、自己10%、ピア10%、クラス0%などです。パーセンテージの合計は100%でなければならず、そうでない場合は警告が表示されます。教師を唯一の評価者にしたい場合は、教師100%、自己0%、ピア0%、クラス0%のように設定してください。';
+$string['ratingself'] = '自己重み付け';
+$string['ratingself_help'] = '学生の総合成績における自己評価の重み付けを設定します。自己評価は他のスコアに影響されることが多いため、学生が自己評価を完了するまで教師のスコアは表示されません。自己スコアは通常「赤」色で表示されます。';
+$string['ratingteacher'] = '教師重み付け';
+$string['ratingteacher_help'] = '学生の総合成績における教師の評価の重み付けを設定します。複数の教師が学生を評価でき、教師の平均スコアが表示されます。教師が唯一の評価者である場合は、この設定を100%にし、他をすべて0%にしてください。教師のスコアは通常「緑」色で表示されます。';
+$string['reallydeletevideo'] = 'このビデオを削除してもよろしいですか？';
+$string['reallyresetallpeers'] = 'ピア割り当てをリセットしてランダムに再割り当てします。続行しますか？';
+$string['remark'] = '備考';
+$string['report'] = 'レポート';
+$string['retakevideo'] = 'ビデオを再撮影';
+$string['reuploadvideo'] = 'ビデオを再アップロード';
+$string['Reembedthelink'] = 'リンクを再埋め込み';
+$string['score'] = 'スコア';
+$string['scores'] = 'スコア';
+$string['saveassociations'] = '関連付けを保存';
+$string['seereport'] = 'レポートを見る';
+$string['self'] = '自己';
+$string['selfassessments'] = '自己評価';
+$string['selfratings'] = '自己評価';
+$string['settotalratingtoahundredpercent'] = '4つの評価（教師 + 自己 + ピア + クラス）は100%でなければなりません。';
+$string['singlevideoupload'] = '単一ビデオアップロード';
+$string['studentrubric'] = '学生ルーブリック';
+$string['submissionby'] = '{$a}による提出';
+$string['takevideo'] = 'ビデオを撮影';
+$string['teacher'] = '教師';
+$string['teacherratings'] = '教師評価';
+$string['teacherrubric'] = '教師ルーブリック';
+$string['teacherselfpeer'] = '教師/自己/ピア/クラス';
+$string['timing'] = 'タイミング';
+$string['timinggrade'] = '{$a}評価';
+$string['timinglabel'] = '前/後の単語';
+$string['timinglabel_help'] = 'ここに単語を入力することで、「前」と「後」のラベルをカスタマイズできます。空白のままにすると、標準の「前」と「後」が使用されます。';
+$string['timingscores'] = '{$a}スコア';
+$string['total'] = '合計';
+$string['totalgrade'] = '総合成績';
+$string['unassociated'] = '未関連付け';
 $string['upload'] = 'アップロード';
-$string['uploadedat'] = 'Uploaded at';
-$string['uploadedtime'] = 'Uploaded time';
-$string['uploadingvideo'] = 'Uploading video';
-$string['uploadingvideonotice'] = 'Uploading... please wait a few minutes';
-$string['uploadvideo'] = 'Upload a video';
-$string['uploadvideo_help'] = 'Here a teacher can click a link and upload a single video file. The file should contain the performance of one student. Record the video of each performance separately. During video upload the file is compressed to 10% of the original size.';
-$string['uploadvideos'] = 'Upload videos';
-$string['startrecoding'] = 'Start Recording';
-$string['pause'] = 'Pause';
-$string['usedpeers'] = 'Number of Peer Assessments';
-$string['usedpeers_help'] = 'A teacher can set the number of peer assessments from 0 to 3. In the Ratings menu, the teacher can then assign the peer automatically or manually.The default is always “0” peers, except when a percentage for peer assessment is assigned to above 0%. Then the default becomes “1” and can be manually re-set from 1-3.';
-$string['video'] = 'Video';
-$string['videoalreadyassociated'] = '{$a} has been already associated with a video.';
-$string['videoassessment:addinstance'] = 'Add a new video assessment';
-$string['videoassessment:associate'] = 'Associate bulk uploaded videos with users';
-$string['videoassessment:bulkupload'] = 'Bulk upload videos';
-$string['videoassessment:bulkupload_help'] = 'A teacher can drag multiple video files into this window. The files will upload and be converted in order. 10-20 files may take up to an hour depending on the resolution. Avoid high resolution videos such as 4K as the size is too large for efficient handling and s unnecessary for the purpose of performance assessment. VGA quality or 720HD 30fps is preferable. In testing, all video formats were compatible.';
-$string['videoassessment:exportownsubmission'] = 'Export own submission';
-$string['videoassessment:grade'] = 'Grade video assessment';
-$string['videoassessment:gradepeer'] = 'Grade peer video assessment';
-$string['videoassessment:submit'] = 'Submit video assessment';
-$string['videoassessment:view'] = 'View video assessment';
-$string['videoassessmentname'] = 'Video assessment name';
-$string['videoformat'] = 'Video format';
-$string['videoformatdesc'] = 'Video format';
-$string['videos'] = 'Videos';
-$string['viewassessmentsofmyvideo'] = 'View assessments of my video';
-$string['viewassociatedvideos'] = 'View associated videos';
-$string['weighting'] = 'Weighting';
-$string['xfeedback'] = '{$a} feedback';
-$string['xunassignedstudents'] = '{$a} unassigned students';
-$string['grade'] = 'Grading';
-$string['grade_help'] = 'This section is for settings that combine the self/peer/class/teacher grades. One combined grade will be uploaded to the Gradebook in this class. Scoring details can be analyzed and downloaded in Excel format by going to the Assess page and finding the download link. In addition, this section has settings for pre-calibration and fairness bonus to improve self assessment.';
-$string['managevideo'] = 'Manage videos';
-$string['class'] = 'Class';
-$string['open'] = 'Open Class Grading';
-$string['close'] = 'Close Class Grading';
-$string['classassessments'] = 'Class Assessments';
-$string['duplicaterubric'] = 'Duplicate Rubric';
-$string['duplicaterubric_help'] = 'This feature will repeat the rubric that has been created for the teacher, and duplicate the rubric into the assessments of self, peer, and class modes.';
-$string['duplicatesuccess'] = 'Duplicate Success';
-$string['duplicateerrors'] = 'Duplicate Errors';
-$string['readyforuse'] = 'Ready for use';
+$string['uploadedat'] = 'アップロード日時';
+$string['uploadedtime'] = 'アップロード時刻';
+$string['uploadingvideo'] = 'ビデオのアップロード';
+$string['uploadingvideonotice'] = 'アップロード中...数分お待ちください';
+$string['uploadvideo'] = 'ビデオをアップロード';
+$string['uploadvideo_help'] = 'ここで教師はリンクをクリックして単一のビデオファイルをアップロードできます。ファイルには1人の学生のパフォーマンスが含まれている必要があります。各パフォーマンスのビデオは別々に録画してください。ビデオアップロード中、ファイルは元のサイズの10%に圧縮されます。';
+$string['uploadvideos'] = 'ビデオをアップロード';
+$string['startrecoding'] = '録画開始';
+$string['pause'] = '一時停止';
+$string['usedpeers'] = 'ピア評価数';
+$string['usedpeers_help'] = '教師はピア評価数を0〜3に設定できます。評価メニューで、教師はピアを自動または手動で割り当てることができます。デフォルトは常に「0」ピアですが、ピア評価のパーセンテージが0%を超えて割り当てられた場合は、デフォルトが「1」になり、1〜3で手動で再設定できます。';
+$string['video'] = 'ビデオ';
+$string['videoalreadyassociated'] = '{$a}は既にビデオに関連付けられています。';
+$string['videoassessment:addinstance'] = '新しいビデオアセスメントを追加';
+$string['videoassessment:associate'] = '一括アップロードされたビデオをユーザーに関連付け';
+$string['videoassessment:bulkupload'] = '一括ビデオアップロード';
+$string['videoassessment:bulkupload_help'] = '教師は複数のビデオファイルをこのウィンドウにドラッグできます。ファイルは順番にアップロードされ、変換されます。解像度によっては10〜20ファイルで1時間かかる場合があります。効率的な処理には大きすぎ、パフォーマンス評価の目的には不要なため、4Kなどの高解像度ビデオは避けてください。VGA品質または720HD 30fpsが推奨されます。テストでは、すべてのビデオ形式が互換性がありました。';
+$string['videoassessment:exportownsubmission'] = '自分の提出をエクスポート';
+$string['videoassessment:grade'] = 'ビデオアセスメントを評価';
+$string['videoassessment:gradepeer'] = 'ピアビデオアセスメントを評価';
+$string['videoassessment:submit'] = 'ビデオアセスメントを提出';
+$string['videoassessment:view'] = 'ビデオアセスメントを表示';
+$string['videoassessment:viewcomments'] = '評価コメントを表示';
+$string['videoassessment:fetchcourses'] = 'ビデオ公開用のコース一覧にアクセス';
+$string['videoassessment:fetchsections'] = 'ビデオ公開用のコースセクションにアクセス';
+$string['videoassessment:managesorting'] = '学生の並び順を管理';
+$string['videoassessmentname'] = 'ビデオアセスメント名';
+$string['videoformat'] = 'ビデオ形式';
+$string['videoformatdesc'] = 'ビデオ形式';
+$string['videos'] = 'ビデオ';
+$string['viewassessmentsofmyvideo'] = '私のビデオの評価を表示';
+$string['viewassociatedvideos'] = '関連付けられたビデオを表示';
+$string['weighting'] = '重み付け';
+$string['xfeedback'] = '{$a}フィードバック';
+$string['xunassignedstudents'] = '{$a}未割り当て学生';
+$string['grade'] = '評価';
+$string['grade_help'] = 'このセクションは、自己/ピア/クラス/教師の成績を組み合わせる設定用です。1つの組み合わせた成績がこのクラスの成績表にアップロードされます。評価ページに移動してダウンロードリンクを見つけることで、スコア詳細をExcel形式で分析・ダウンロードできます。さらに、このセクションには自己評価を改善するための事前校正と公平性ボーナスの設定があります。';
+$string['managevideo'] = 'ビデオを管理';
+$string['class'] = 'クラス';
+$string['open'] = 'クラス評価を開く';
+$string['close'] = 'クラス評価を閉じる';
+$string['classassessments'] = 'クラス評価';
+$string['duplicaterubric'] = 'ルーブリックを複製';
+$string['duplicaterubric_help'] = 'この機能は、教師用に作成されたルーブリックを繰り返し、ルーブリックを自己、ピア、クラスモードの評価に複製します。';
+$string['duplicatesuccess'] = '複製成功';
+$string['duplicateerrors'] = '複製エラー';
+$string['readyforuse'] = '使用準備完了';
 $string['allparticipants'] = 'すべての参加者';
-$string['assignclass'] = 'Assign class';
-$string['assignclass_help'] = 'This feature allows a teacher to turn on or turn off the “Class” mode of assessment. The “Class” mode is for all the students watching a live, real-time performance to assess the speaker without a recording. This is more difficult to assess accurately, due to the time pressure, but it gives students practice in using and understanding the rubric, and keeps them learning actively instead of half-listening to a presentation. Students must log into the class website and find the appropriate Video Assessment activity on their course. They search for the student doing the performance and begin choosing the scores on each scale. The scores of all students are averaged for one single “Class” score for the whole class, thus mitigating too high or too low scores.';
-$string['sortid'] = 'Sort by ID';
-$string['sortname'] = 'Sort by name';
-$string['sortmanually'] = 'Sort manually';
-$string['sortby'] = 'Sort by';
-$string['order'] = 'Order';
-$string['save'] = 'Save';
+$string['assignclass'] = 'クラスを割り当て';
+$string['assignclass_help'] = 'この機能により、教師は評価の「クラス」モードをオンまたはオフにできます。「クラス」モードは、すべての学生がライブのリアルタイムパフォーマンスを視聴して、録画なしで話者を評価するためのものです。時間的プレッシャーのため正確に評価するのは困難ですが、学生にルーブリックの使用と理解の練習を提供し、プレゼンテーションを半分聞くのではなく、積極的に学習し続けさせます。学生はクラスウェブサイトにログインし、コースで適切なビデオアセスメントアクティビティを見つける必要があります。パフォーマンスを行っている学生を検索し、各スケールでスコアを選択し始めます。すべての学生のスコアは、クラス全体の単一の「クラス」スコアのために平均化され、高すぎるまたは低すぎるスコアを軽減します。';
+$string['sortid'] = 'IDでソート';
+$string['sortname'] = '名前でソート';
+$string['sortmanually'] = '手動でソート';
+$string['sortby'] = 'ソート方法';
+$string['order'] = '順序';
+$string['save'] = '保存';
 $string['orderasc'] = '昇順';
 $string['orderdesc'] = '降順';
-$string['namesort'] = 'First name / Surname';
-$string['title'] = 'タイトル：';
-$string['groupname'] = 'グループ名';
-$string['existingcourseornewcourse'] = 'Publish to an Existing Course<br /> or a New Course';
-$string['insertintosection'] = 'Insert into Section';
-$string['addprefixtolabel'] = 'Add Prefix to Label Name';
-$string['addsuffixtolabel'] = 'Add Suffix to Label Name';
-$string['inputnewcourseshortname'] = 'Input a new course short name';
-$string['courseshortnameexist'] = 'Short name is already used for another course';
-$string['pleasechoosevideos'] = 'Please choose videos';
-$string['trainingpretest'] = 'Training Pre-test';
-$string['trainingpretest_help'] = 'Similar to ‘calibrating’ for scoring a test, this Training Pre-test function forces students to first pass a training test before moving on to actual scoring. Students watch an uploaded video and rubric provided by the teacher. They can only pass when they score within a decided difference (20% for example) from the pre-entered desired scores by the teacher.';
-$string['fullnamecourse'] = 'Course Full Name';
-$string['shortnamecourse'] = 'Course Short Name';
-$string['no'] = 'No';
-$string['yes'] = 'Yes';
-$string['passed'] = 'Pass';
-$string['failed'] = 'Fail';
-$string['training'] = 'Training';
-$string['results'] = 'Results';
-$string['passednotice'] = 'Congratulations! All of your scores were near standard scores!<br />Go to {$a} assessment.';
-$string['failednotice'] = 'Sorry. Some of your scores were {$a->accepteddifference}% different from standard scores. You must have all “O”, no “X”.<br />{$a->button}';
-$string['selfpeer'] = 'Self / Peer';
-$string['tryagain'] = 'Try again';
-$string['pleasedefinerubricforteacher'] = 'Please define rubric for teacher';
-$string['pleasechoosegradingareas'] = 'Please choose grading areas';
-$string['gradingareadefined'] = 'Can not duplicated because rubric is already exist';
-$string['duplicatefor'] = 'Duplicate for';
-$string['teacherassesstraining'] = 'Assess training pre-test';
-$string['notattempted'] = 'Not attempted';
-$string['trainingvideo'] = 'Training video';
-$string['trainingvideo_help'] = 'Upload a video for the students to practice and complete scoring on the training Pre-test.';
-$string['accepteddifference'] = 'Accepted difference in scores';
-$string['accepteddifference_help'] = 'Accepted difference in scores. Default 20%. Here the acceptable range, or ‘difference’ can be set for students’ scores, compared to
-pre-entered teacher scores. If the student score lies outside the acceptable difference for any criterion on the rubric, they fail the Training Pre-test and must take it again.';
-$string['trainingdesc'] = 'Training explanation';
-$string['trainingdesc_help'] = 'Add an explanation to teach students how to score and what the accepted difference from teacher scores on each rubric criterion are. The students
-need to receive all ‘circles’ (within acceptable difference from teacher scores) to pass.';
-$string['trainingdeschelp'] = 'Training explanation text';
-$string['trainingdesctext'] = 'To pass this training, you (red score) must evaluate each scale within xx% of the teacher’s score (green score). If you are xx% or under, you
-receive a “maru” “O”. If you are over xx%, you receive a “batsu” “X”. All scales must be “O” before you can pass.';
-$string['viewresult'] = 'View result';
-$string['beforetraining'] = 'Training Pre-test';
+$string['namesort'] = '名 / 姓';
+$string['existingcourseornewcourse'] = '既存のコースまたは新しいコースに公開';
+$string['insertintosection'] = 'セクションに挿入';
+$string['addprefixtolabel'] = 'ラベル名にプレフィックスを追加';
+$string['addsuffixtolabel'] = 'ラベル名にサフィックスを追加';
+$string['inputnewcourseshortname'] = '新しいコース短縮名を入力';
+$string['courseshortnameexist'] = '短縮名は既に他のコースで使用されています';
+$string['pleasechoosevideos'] = 'ビデオを選択してください';
+$string['trainingpretest'] = 'トレーニング事前テスト';
+$string['trainingpretest_help'] = 'テストの採点の「校正」と同様に、このトレーニング事前テスト機能は、学生が実際の採点に進む前に、まずトレーニングテストに合格することを強制します。学生は教師が提供するアップロードされたビデオとルーブリックを視聴します。教師が事前に入力した希望スコアから決定された差（例：20%）以内でスコアを付けた場合のみ合格できます。';
+$string['fullnamecourse'] = 'コース正式名';
+$string['shortnamecourse'] = 'コース短縮名';
+$string['no'] = 'いいえ';
+$string['yes'] = 'はい';
+$string['passed'] = '合格';
+$string['failed'] = '不合格';
+$string['training'] = 'トレーニング';
+$string['results'] = '結果';
+$string['passednotice'] = 'おめでとうございます！すべてのスコアが標準スコアに近いです！<br />{$a}評価に進んでください。';
+$string['failednotice'] = '申し訳ありません。いくつかのスコアが標準スコアから{$a->accepteddifference}%異なっていました。すべて「○」でなければなりません、「×」はありません。<br />{$a->button}';
+$string['selfpeer'] = '自己 / ピア';
+$string['tryagain'] = '再試行';
+$string['pleasedefinerubricforteacher'] = '教師用のルーブリックを定義してください';
+$string['pleasechoosegradingareas'] = '評価エリアを選択してください';
+$string['gradingareadefined'] = 'ルーブリックが既に存在するため複製できません';
+$string['duplicatefor'] = '複製先';
+$string['teacherassesstraining'] = 'トレーニング事前テストを評価';
+$string['notattempted'] = '未試行';
+$string['trainingvideo'] = 'トレーニングビデオ';
+$string['trainingvideo_help'] = '学生がトレーニング事前テストで練習し、採点を完了するためのビデオをアップロードしてください。';
+$string['accepteddifference'] = 'スコアの許容差';
+$string['accepteddifference_help'] = 'スコアの許容差。デフォルト20%。ここでは、学生のスコアの許容範囲または「差」を、教師が事前に入力したスコアと比較して設定できます。学生のスコアがルーブリックの任意の基準で許容差外にある場合、トレーニング事前テストに不合格となり、再受験する必要があります。';
+$string['trainingdesc'] = 'トレーニング説明';
+$string['trainingdesc_help'] = '学生に採点方法と各ルーブリック基準での教師スコアからの許容差を教える説明を追加してください。学生は合格するためにすべて「○」（教師スコアからの許容差内）を受け取る必要があります。';
+$string['trainingdeschelp'] = 'トレーニング説明テキスト';
+$string['trainingdesctext'] = 'このトレーニングに合格するには、あなた（赤いスコア）は各スケールを教師のスコア（緑のスコア）のxx%以内で評価する必要があります。xx%以下であれば「○」を受け取ります。xx%を超えると「×」を受け取ります。合格するにはすべてのスケールが「○」でなければなりません。';
+$string['viewresult'] = '結果を表示';
+$string['beforetraining'] = 'トレーニング事前テスト';
 
-$string['changeuploadtype'] = 'changeuploadtype';
+$string['changeuploadtype'] = 'アップロードタイプを変更';
 $string['url'] = 'URL';
-$string['url_help'] = 'This is a Youtube URL';
-$string['url_error'] = 'Please enter the correct Youtube URL';
-$string['ratingclass'] = 'ratingclass';
-$string['ratingclass_help'] = 'This rating is not used with video recordings, but for live performances, with all classmates making scores and giving comments. Usually at 0%, even if turned ‘on’, the purpose of the whole class rating is to keep the audience busy and learning the rubrics. It must be turned on in the Grading menu. In reports, the class average score is usually shown in the color ‘yellow’.';
-$string['clickonthe'] = 'Click on the';
-$string['donotclickhere'] = 'Do not click here.';
-$string['or'] = 'Or';
-$string['changetraingingwarning'] = 'changetraingingwarning';
-$string['firstassess'] = '【First assess】';
-$string['assessagain'] = '【Assess again】';
+$string['url_help'] = 'これはYouTube URLです';
+$string['url_error'] = '正しいYouTube URLを入力してください';
+$string['ratingclass'] = 'クラス評価';
+$string['ratingclass_help'] = 'この評価はビデオ録画では使用されませんが、すべてのクラスメートがスコアを付け、コメントを提供するライブパフォーマンス用です。通常は0%で、オンにしても、クラス全体の評価の目的は聴衆を忙しくさせ、ルーブリックを学習させることです。評価メニューでオンにする必要があります。レポートでは、クラス平均スコアは通常「黄色」で表示されます。';
+$string['clickonthe'] = 'クリックしてください';
+$string['donotclickhere'] = 'ここをクリックしないでください。';
+$string['or'] = 'または';
+$string['changetraingingwarning'] = 'トレーニング変更警告';
+$string['firstassess'] = '【初回評価】';
+$string['assessagain'] = '【再評価】';
 
-$string['notifications'] = 'Notifications';
-$string['notificationssendtype'] = 'Notification carrier';
-$string['notificationcontenttypegroup'] = 'Notification content';
-
-$string['fairnessbonus'] = '+PeerFairness<br>bonus';
-$string['selffairnessbonus'] = '+SelfFairness<br>bonus';
-$string['finalscore'] = 'Final score';
-$string['reminder_notifition_mail_cron'] = 'reminder notifition mail cron';
-$string['uploadfile'] = 'Upload Video File';
+$string['notifications'] = '通知';
+$string['notificationssendtype'] = '通知キャリア';
+$string['notificationcontenttypegroup'] = '通知内容';
+$string['peerfairnessbonusfortable'] = '+ピア公平性<br>ボーナス';
+$string['selffairnessbonusfortable'] = '+自己公平性<br>ボーナス';
+$string['finalscorefortable'] = '最終スコア';
+$string['reminder_notifition_mail_cron'] = 'リマインダー通知メールcron';
+$string['uploadfile'] = 'ビデオファイルをアップロード';
 $string['uploadmessage'] = 'あなたのビデオファイルは500MBを超えています。低い解像度でビデオを撮り直すか、小さいファイルを再アップロードしてください。';
 
-$string['managevideos'] = 'Manage videos';
-$string['managevideos_help'] = 'The “Manage Videos” admin page has nine functions to click. You do not have to touch any function unless you wish to change the default settings.
-<br />a. Upload a Video
-<br />b. Bulk Upload Videos
-<br />c. Bulk Video Deletion
-<br />d. Associate
-<br />e.  Assess
-<br />f.  Assign Peers
-<br />g. Publish Videos
-<br />h. Assign Class
-<br />i.  Duplicate Rubric';
-$string['notsupportedbrowser'] = 'This browser is not supported';
-$string['dropvideofileshere'] = 'Drop video files here';
-$string['uploadfilename'] = 'Filename';
-$string['uploadfilesize'] = 'Size';
-$string['uploadmimetype'] = 'Type';
-$string['uploadstatus'] = 'Status';
-$string['uploadprogress'] = 'Progress';
-$string['notifications_help'] = 'Notifications send the assessment information to the students via their email inboxes or their mobile quickmail addresses. There are four kinds of notificiations:
-<br />a. Teacher Comment notification
-<br />b. Peer Comment notification
-<br />c. Reminder notification
-<br />d. Video upload/reupload notification';
-$string['notificationcarriergroup'] = 'Notification carrier';
-$string['notificationcarriergroup_help'] = 'There are two choices for notifications: by the registered Moodle email address in the site, or by Mobile Quickmail (an optional block for using mobile phone email addresses). One or both can be selected.';
-$string['teachercommentnotification'] = 'Notification content';
-$string['teachercommentnotification_help'] = 'a. Teacher Comment notification is to send an email to the student whenever a teacher makes comments and saves the assessment.
-<br />b. Peer Comment notification: is to send an email notification to the student whenever a peer makes comments and saves the assessment.
-<br />c. Reminder notification is given when a student has forgotten an assignment or is late.
-<br />d. Video upload/reupload notification gives a notification to the teacher whenever a video is uploaded or re-uploaded into the video assessment module.
-The email message format for each type of notification must be set up by the teacher.';
+$string['managevideos'] = 'ビデオを管理';
+$string['managevideos_help'] = '「ビデオ管理」管理ページには9つの機能があります。デフォルト設定を変更したい場合を除き、どの機能にも触れる必要はありません。
+<br />a. ビデオをアップロード
+<br />b. 一括ビデオアップロード
+<br />c. 一括ビデオ削除
+<br />d. 関連付け
+<br />e. 評価
+<br />f. ピアを割り当て
+<br />g. ビデオを公開
+<br />h. クラスを割り当て
+<br />i. ルーブリックを複製';
+$string['notsupportedbrowser'] = 'このブラウザはサポートされていません';
+$string['dropvideofileshere'] = 'ビデオファイルをここにドロップ';
+$string['uploadfilename'] = 'ファイル名';
+$string['uploadfilesize'] = 'サイズ';
+$string['uploadmimetype'] = 'タイプ';
+$string['uploadstatus'] = 'ステータス';
+$string['uploadprogress'] = '進行状況';
+$string['notifications_help'] = '通知は評価情報を学生のメール受信箱またはモバイルクイックメールアドレスに送信します。4種類の通知があります：
+<br />a. 教師コメント通知
+<br />b. ピアコメント通知
+<br />c. リマインダー通知
+<br />d. ビデオアップロード/再アップロード通知';
+$string['notificationcarriergroup'] = '通知キャリア';
+$string['notificationcarriergroup_help'] = '通知には2つの選択肢があります：サイトに登録されたMoodleメールアドレス、またはモバイルクイックメール（携帯電話のメールアドレスを使用するためのオプションブロック）。1つまたは両方を選択できます。';
+$string['teachercommentnotification'] = '通知内容';
+$string['teachercommentnotification_help'] = 'a. 教師コメント通知は、教師がコメントを作成して評価を保存するたびに学生にメールを送信します。
+<br />b. ピアコメント通知：ピアがコメントを作成して評価を保存するたびに学生にメール通知を送信します。
+<br />c. リマインダー通知は、学生が課題を忘れたり遅れたりしたときに与えられます。
+<br />d. ビデオアップロード/再アップロード通知は、ビデオがビデオアセスメントモジュールにアップロードまたは再アップロードされるたびに教師に通知を送信します。
+各タイプの通知のメールメッセージ形式は教師によって設定される必要があります。';
 
-$string['modgrade'] = 'Grade Type';
-$string['modgrade_help'] = 'For video assessment, do not change the default settings here for “Grade Type”. The Grade Type is “Point” and the maximum grade is “100”.  If you change the settings, the video assessment system may not work.';
+$string['modgrade'] = '成績タイプ';
+$string['modgrade_help'] = 'ビデオアセスメントでは、「成績タイプ」のデフォルト設定を変更しないでください。成績タイプは「ポイント」で、最大成績は「100」です。設定を変更すると、ビデオアセスメントシステムが動作しなくなる可能性があります。';
 
-$string['advancedgradingmethodsgroup'] = 'Grading Methods';
-$string['advancedgradingmethodsgroup_help'] = 'For video assessment, do not change the default settings here for “Grading Method”. All settings use rubric, because that is the best method of performance assessment. If you change the settings, the video assessment system may not work.';
-$string['classgrading'] = 'Whole Class Grading';
-$string['classgrading_help'] = 'If you want the whole class of students to watch a live performance and assess it in real time, use this feature. To turn on whole class grading, click ‘Open Class Grading’.  The default is “Close class grading”.  All the student’s grades will be totaled into one average grade.';
-$string['fairnessbonus'] = 'Peer Fairness Bonus';
-$string['fairnessbonus_help'] = 'The Peer Fairness bonus rewards students who score ‘fairly’, that is, their scores are not all ‘100s” or “0s” and fairly close to what the teacher is scoring. The options for setting up this tool include deciding how much of a bonus (% of final score) you will assign, and how much of that bonus students will receive based on proximity to the teachers score.';
-$string['selffairnessbonus'] = 'Self Fairness Bonus';
-$string['selffairnessbonus_help'] = 'The Self Fairness bonus rewards students who score ‘fairly’, that is, their scores are not all ‘100s” or “0s” and fairly close to what the teacher is scoring. The options for setting up this tool include deciding how much of a bonus (% of final score) you will assign, and how much of that bonus students will receive based on proximity to the teachers score.';
-$string['uploadfile_help'] = 'There are two stages: Uploading the file, and then converting the file. The converting process compresses the file to 1/10th the size. Sometimes this takes a long time—over ten minutes. Please check if your camera is set on 4K, which is too high, and lower the resolution and lower the fps. VGA or 720hd, 30fps is better.';
-$string['uploadingvideo_help'] = 'You can share your recorded performance for assessment with three methods. In this screen, students and teachers can:
-<br />1) Upload a single file of your video performance here or
-<br />2) upload your file into YouTube and link to that video. Set your camera to its lowest resolution for fast response. Record a single video file in your device and upload here. Additionally, teachers can:
-<br />3) record on an SD card for bulk upload. Go to Manage Videos >> Bulk upload for that process. Note: this screen is only available to students if the default for “Allow student upload of videos” is kept at “Yes”.';
-$string['uploadyoutube'] = 'Link to Youtube Video';
-$string['uploadyoutube_help'] = 'For better performance, upload your video into your personal YouTube account or another video sharing site. Then copy the link and paste the link into the box for that link. When you link to a Youtube file, there is no thumbnail photo showing on the assessment screen. Just play the video and it will appear.';
-
-
-$string['quickSetup'] = 'Quick Setup';
-$string['quickSetup_help'] = 'Quick Setup';
-$string['grade_rating_name'] = 'Rating';
-$string['grade_grading_name'] = 'Grading';
+$string['advancedgradingmethodsgroup'] = '評価方法';
+$string['advancedgradingmethodsgroup_help'] = 'ビデオアセスメントでは、「評価方法」のデフォルト設定を変更しないでください。すべての設定でルーブリックを使用します。これはパフォーマンス評価の最良の方法だからです。設定を変更すると、ビデオアセスメントシステムが動作しなくなる可能性があります。';
+$string['classgrading'] = 'クラス全体評価';
+$string['classgrading_help'] = 'クラス全体の学生がライブパフォーマンスを視聴し、リアルタイムで評価したい場合は、この機能を使用してください。クラス全体評価をオンにするには、「クラス評価を開く」をクリックしてください。デフォルトは「クラス評価を閉じる」です。すべての学生の成績が1つの平均成績に合計されます。';
+$string['peerfairnessbonus'] = 'ピア公平性ボーナス';
+$string['peerfairnessbonus_help'] = 'ピア公平性ボーナスは、「公平に」スコアを付ける学生、つまり、すべてのスコアが「100」や「0」ではなく、教師が採点しているものにかなり近いスコアを付ける学生に報酬を与えます。このツールの設定オプションには、最終スコアの何%をボーナスとして割り当てるかを決定し、教師のスコアへの近さに基づいて学生がそのボーナスの何%を受け取るかを決定することが含まれます。';
+$string['selffairnessbonus'] = '自己公平性ボーナス';
+$string['selffairnessbonus_help'] = '自己公平性ボーナスは、「公平に」スコアを付ける学生、つまり、すべてのスコアが「100」や「0」ではなく、教師が採点しているものにかなり近いスコアを付ける学生に報酬を与えます。このツールの設定オプションには、最終スコアの何%をボーナスとして割り当てるかを決定し、教師のスコアへの近さに基づいて学生がそのボーナスの何%を受け取るかを決定することが含まれます。';
+$string['uploadfile_help'] = '2つの段階があります：ファイルのアップロード、そしてファイルの変換です。変換プロセスはファイルを1/10のサイズに圧縮します。時には長い時間がかかります—10分以上。カメラが4Kに設定されていないか確認してください。これは高すぎるので、解像度とfpsを下げてください。VGAまたは720HD、30fpsが良いです。';
+$string['uploadingvideo_help'] = '評価のために録画したパフォーマンスを3つの方法で共有できます。この画面では、学生と教師は以下ができます：
+<br />1）ここにビデオパフォーマンスの単一ファイルをアップロードするか
+<br />2）ファイルをYouTubeにアップロードしてそのビデオにリンクする。高速応答のためにカメラを最低解像度に設定してください。デバイスで単一のビデオファイルを録画してここにアップロードしてください。さらに、教師は以下ができます：
+<br />3）一括アップロード用にSDカードに録画する。そのプロセスには「ビデオ管理」>>「一括アップロード」に移動してください。注意：この画面は「学生のビデオアップロードを許可」のデフォルトが「はい」に保たれている場合のみ学生に利用可能です。';
+$string['uploadyoutube'] = 'YouTubeビデオにリンク';
+$string['uploadyoutube_help'] = 'より良いパフォーマンスのために、ビデオを個人のYouTubeアカウントまたは他のビデオ共有サイトにアップロードしてください。その後、リンクをコピーしてそのリンクのボックスに貼り付けてください。YouTubeファイルにリンクする場合、評価画面にサムネイル写真は表示されません。ビデオを再生するだけで表示されます。';
 
 
-$string['gradeitem:beforeteacher'] = 'Teacher';
-$string['gradeitem:beforetraining'] = 'Training Pre-test';
-$string['gradeitem:beforeself'] = 'Self';
-$string['gradeitem:beforepeer'] = 'Peer';
-$string['gradeitem:beforeclass'] = 'Class';
+$string['quickSetup'] = 'クイックセットアップ';
+$string['quickSetup_help'] = 'クイックセットアップ';
+$string['grade_rating_name'] = '評価';
+$string['grade_grading_name'] = '採点';
 
-$string['graded'] = 'Graded';
-$string['recordnewvideo'] = 'Record New Video';
-$string['recordradios'] = 'Record New Video';
-$string['recordradios_help'] = 'Record New Video is for directly recording a video for assessment.
-This function accesses the camera on your computer or mobile phone and starts a video recording.
-In contrast, the “Upload Video File” selection goes to the photo/video library of files to allow you to select a previously recorded video to upload.
-<br/>*Click the stop recording button, and then upload it automatically*';
 
-$string['calendardue'] = '{$a} is due';
-$string['calendargradingdue'] = '{$a} is due to be graded';
+$string['gradeitem:beforeteacher'] = '教師';
+$string['gradeitem:beforetraining'] = 'トレーニング事前テスト';
+$string['gradeitem:beforeself'] = '自己';
+$string['gradeitem:beforepeer'] = 'ピア';
+$string['gradeitem:beforeclass'] = 'クラス';
 
-$string['assignmentisdue'] = 'videoassessment is due';
-$string['latesubmissionsaccepted'] = 'Allowed until {$a}';
-$string['nomoresubmissionsaccepted'] = 'Only allowed for participants who have been granted an extension';
-$string['markasreadonnotificationyes'] = 'Notifications are marked as read automatically.';
-$string['markasreadonnotificationno'] = 'Notifications are not marked as read automatically.';
+$string['graded'] = '評価済み';
+$string['recordnewvideo'] = '新しいビデオを録画';
+$string['recordradios'] = '新しいビデオを録画';
+$string['recordradios_help'] = '新しいビデオを録画は、評価のためにビデオを直接録画するためのものです。
+この機能は、コンピューターまたは携帯電話のカメラにアクセスしてビデオ録画を開始します。
+対照的に、「ビデオファイルをアップロード」選択は、以前に録画したビデオを選択してアップロードできるように、ファイルの写真/ビデオライブラリに移動します。
+<br/>*録画停止ボタンをクリックしてから、自動的にアップロードしてください*';
 
-$string['installerrorffmpegdoesnotexist'] = 'The default installation path of ffmpeg does not exist!';
+$string['calendardue'] = '{$a}の締切';
+$string['calendargradingdue'] = '{$a}の評価締切';
 
-$string['timemarked'] = 'Time marked';
+$string['assignmentisdue'] = 'ビデオアセスメントの締切';
+$string['latesubmissionsaccepted'] = '{$a}まで許可';
+$string['nomoresubmissionsaccepted'] = '延長が許可された参加者のみ許可';
+$string['markasreadonnotificationyes'] = '通知は自動的に既読としてマークされます。';
+$string['markasreadonnotificationno'] = '通知は自動的に既読としてマークされません。';
 
-$string['generalcomments'] = 'General Comments';
-$string['notificationmessagesent'] = 'Notification Message sent';
+$string['installerrorffmpegdoesnotexist'] = 'ffmpegのデフォルトインストールパスが存在しません！';
 
-$string['bonuspercentage'] = 'Bonus Percentage';
-$string['ontopoftotal'] = 'On top of total';
-$string['within'] = 'within';
-$string['ofteacherscore'] = 'of teacher score = ';
-$string['offairnessbonus'] = 'of Fairness bonus';
-$string['errorovermaximumpossiblegrade'] = 'The grade to pass can not be greater than the maximum possible grade 100';
-$string['gradecategory'] = 'Grade Category';
-$string['registeredemail'] = 'registered email';
-$string['mobilequickmail'] = 'Mobile Quickmail';
-$string['teachernotificationtemplate'] = 'Dear [[student name]],
-Good work! I just checked your presentation video and made some
-scores and comments. Here they are:
-[[insert assignment name]] [[insert current date]]
-Here is a link to this report: [[insert link to student page to view assessment]]
-You can redo your presentation on June 7th and get a better grade.
-Send an email to me if you have a question [[teacher email address]]
-Best regards,
-[[teacher name]]';
-$string['teachercomentnotificationlabel'] = 'Teacher Comment notification';
-$string['whentosendnotification'] = 'When to send notifiction';
-$string['firstassessmentbyteacher'] = 'First assessment by teacher';
-$string['additionalassessmentbyteacher'] = 'Additional assessment by teacher';
-$string['whatinfomationtosend'] = 'What information to send';
-$string['whatinfomationtosendcontents'] = '<div class="max-with">[[student name]]<br/>[[VA assignment name]]<br/>[[current date]]<br/>[[link to view whole assessment report]]->view Report<br/>[[teacher email address]]<br/>[[teacher name]]</div>';
-$string['templatetextfornotification'] = 'Template text for notification';
-$string['peertnotificationtemplate'] = 'Dear [[student name]],
-Good work! One of your classmates just checked your presentation
-video and made some scores and comments. Here they are:
-[[insert assignment name]] [[insert current date]]
-Here is a link to this report: [[insert link to student page to view assessment]]
-**your classmates will get a bonus if they score you fairly**
-Send an email to me if you have a question [[teacher email address]]
-Best regards,
-[[teacher name]]';
-$string['peercomentnotificationlabel'] = 'Peer Comment notification';
-$string['firstassessmentbystudent'] = 'First assessment by student';
-$string['remindernotificationtemplate'] = 'Dear [[student name]],
-Have you watched and checked your presentation?
-Its due date is/was on June x. Here is a link:
-[[insert link to self-assessment page]]
-Be sure to write at least 3 comments as well as scores.
-Send an email to your me if you have a question [[teacher email
-address]]. Thanks!
-Best regards,
-[[teacher name]]';
-$string['remindernotification'] = 'Reminder Notification';
-$string['beforeduedate'] = 'before due date';
-$string['daysbefore'] = 'days before';
-$string['onduedate'] = 'on due date';
-$string['afterduedateevery'] = 'after due date, every';
-$string['onvideouploaded'] = 'on video uploaded';
-$string['onselfassessment'] = 'on self assessment';
-$string['onselfassessmentwithcomments'] = 'on self assessment with 20 words of comments';
-$string['onpeerassessment'] = 'on peer assessment';
-$string['videonotificationtemplate'] = 'Dear [[teacher name]],
-[[student name]] has just uploaded a video file.
-To view it and assess it, please go to: [[insert link to self-assessment page]]
-Best regards,
+$string['timemarked'] = 'マークされた時刻';
+
+$string['generalcomments'] = '一般的なコメント';
+$string['notificationmessagesent'] = '通知メッセージが送信されました';
+
+$string['bonuspercentage'] = 'ボーナスパーセンテージ';
+$string['ontopoftotal'] = '合計の上に';
+$string['within'] = '以内';
+$string['ofteacherscore'] = '教師スコアの = ';
+$string['offairnessbonus'] = '公平性ボーナスの';
+$string['errorovermaximumpossiblegrade'] = '合格する成績は最大可能成績100を超えることはできません';
+$string['gradecategory'] = '成績カテゴリ';
+$string['registeredemail'] = '登録メール';
+$string['mobilequickmail'] = 'モバイルクイックメール';
+$string['teachernotificationtemplate'] = '[[学生名]]さんへ、
+お疲れ様です！プレゼンテーションビデオを確認し、いくつかのスコアとコメントを作成しました。以下がそれらです：
+[[課題名を挿入]] [[現在の日付を挿入]]
+このレポートへのリンクです：[[評価を表示する学生ページへのリンクを挿入]]
+6月7日にプレゼンテーションをやり直して、より良い成績を得ることができます。
+質問があれば私にメールを送ってください [[教師メールアドレス]]
+よろしくお願いします、
+[[教師名]]';
+$string['teachercomentnotificationlabel'] = '教師コメント通知';
+$string['whentosendnotification'] = 'いつ通知を送信するか';
+$string['firstassessmentbyteacher'] = '教師による初回評価';
+$string['additionalassessmentbyteacher'] = '教師による追加評価';
+$string['whatinfomationtosend'] = '送信する情報';
+$string['whatinfomationtosendcontents'] = '<div class="max-with">[[学生名]]<br/>[[VA課題名]]<br/>[[現在の日付]]<br/>[[評価レポート全体を表示するリンク]]->レポートを表示<br/>[[教師メールアドレス]]<br/>[[教師名]]</div>';
+$string['templatetextfornotification'] = '通知用テンプレートテキスト';
+$string['peertnotificationtemplate'] = '[[学生名]]さんへ、
+お疲れ様です！クラスメートの一人があなたのプレゼンテーションビデオを確認し、いくつかのスコアとコメントを作成しました。以下がそれらです：
+[[課題名を挿入]] [[現在の日付を挿入]]
+このレポートへのリンクです：[[評価を表示する学生ページへのリンクを挿入]]
+**クラスメートは公平にスコアを付けるとボーナスを受け取ります**
+質問があれば私にメールを送ってください [[教師メールアドレス]]
+よろしくお願いします、
+[[教師名]]';
+$string['peercomentnotificationlabel'] = 'ピアコメント通知';
+$string['firstassessmentbystudent'] = '学生による初回評価';
+$string['remindernotificationtemplate'] = '[[学生名]]さんへ、
+プレゼンテーションを視聴し、確認しましたか？
+締切日は6月x日です。以下がリンクです：
+[[自己評価ページへのリンクを挿入]]
+スコアと同様に、少なくとも3つのコメントを書くことを忘れないでください。
+質問があれば私にメールを送ってください [[教師メールアドレス]]。ありがとうございます！
+よろしくお願いします、
+[[教師名]]';
+$string['remindernotification'] = 'リマインダー通知';
+$string['beforeduedate'] = '締切日前';
+$string['daysbefore'] = '日前';
+$string['onduedate'] = '締切日';
+$string['afterduedateevery'] = '締切日後、毎';
+$string['onvideouploaded'] = 'ビデオアップロード時';
+$string['onselfassessment'] = '自己評価時';
+$string['onselfassessmentwithcomments'] = '20語のコメント付き自己評価時';
+$string['onpeerassessment'] = 'ピア評価時';
+$string['videonotificationtemplate'] = '[[教師名]]さんへ、
+[[学生名]]がビデオファイルをアップロードしました。
+それを視聴し、評価するには、以下に移動してください：[[自己評価ページへのリンクを挿入]]
+よろしくお願いします、
 https://moodle.sgu.ac.jp';
-$string['videouploadnotificationlabel'] = 'Video upload/reupload notification';
-$string['videouploadforthefirsttime'] = 'when the student uploads a video for first time';
-$string['whenevervideoupload'] = 'whenever a student re-uploads a video';
-$string['typeofassessment'] = 'Types of assessment';
-$string['numberofpeers'] = 'Number of peers';
-$string['maximumpoints'] = 'maximum points';
-$string['simpledirectgroup'] = 'Grading - simple direct';
+$string['videouploadnotificationlabel'] = 'ビデオアップロード/再アップロード通知';
+$string['videouploadforthefirsttime'] = '学生が初回ビデオアップロード時';
+$string['whenevervideoupload'] = '学生がビデオを再アップロードするたび';
+$string['typeofassessment'] = '評価の種類';
+$string['numberofpeers'] = 'ピア数';
+$string['maximumpoints'] = '最大ポイント';
+$string['simpledirectgroup'] = '採点 - シンプルダイレクト';
 
-$string['errornovideorecord'] = 'Please add a video record first';
+$string['errornovideorecord'] = 'まずビデオ記録を追加してください';
 
-$string['videoassessmentnotfound'] = 'Video assessment not found';
-$string['submission'] = 'Submission';
-$string['invalidid'] = 'Invalid ID';
-$string['coursemisconf'] = 'Course setting is incorrect.';
+$string['videoassessmentnotfound'] = 'ビデオアセスメントが見つかりません';
+$string['submission'] = '提出';
+$string['invalidid'] = '無効なID';
+$string['coursemisconf'] = 'コース設定が正しくありません。';
+
+$string['stoprecording'] = '録画停止';
+$string['resumerecording'] = '録画再開';
+$string['errorcapturingmedia'] = 'メディアキャプチャエラー：';
+
+$string['totalscore'] = '合計スコア';
+$string['finalscore'] = '最終スコア';
+$string['fairnessbonus'] = '公平性ボーナス';
+
+$string['videonotfound'] = 'ビデオが見つかりません。';
+$string['average'] = '平均';
+$string['notgradedyet'] = 'まだ評価されていません。';
+
+$string['videoassessmentnotfound'] = 'ビデオアセスメントが見つかりません。';
+$string['invaliduploadedfile'] = 'アップロードされたファイルが無効です。';
 
 /* privacy:metadata */
 $string['privacy:metadata:videoassessment'] = 'ビデオアセスメントファイルに関する情報。';

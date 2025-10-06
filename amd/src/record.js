@@ -55,20 +55,20 @@ define([
 
                 recorder.startRecording();
                 btnPause.style.display = '';
-                btnStart.textContent = 'Stop Recording';
+                btnStart.textContent = M.str.videoassessment.stoprecording;
             }, (err) => {
-                alert('Error capturing media: ' + err.message);
+                alert(M.str.videoassessment.errorcapturingmedia + ' ' + err.message);
             });
         });
 
         btnPause.addEventListener('click', function () {
             if (!recorder) { return; }
-            if (btnPause.textContent === 'Pause') {
+            if (btnPause.textContent === M.str.videoassessment.pause) {
                 recorder.pauseRecording();
-                btnPause.textContent = 'Resume Recording';
+                btnPause.textContent = M.str.videoassessment.resumerecording;
             } else {
                 recorder.resumeRecording();
-                btnPause.textContent = 'Pause';
+                btnPause.textContent = M.str.videoassessment.pause;
             }
         });
     }

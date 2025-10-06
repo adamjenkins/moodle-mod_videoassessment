@@ -38,6 +38,7 @@ require_login($cm->course, true, $cm);
 
 $course = $DB->get_record('course', ['id' => $cm->course]);
 $context = \context_module::instance($cm->id);
+require_capability('mod/videoassessment:grade', $context);
 $areas = []; // Array of area IDs for class, peer, and self in the grading_areas table.
 $definitionids = []; // Array of defination IDs in grading_definitions table
 $criteriaids = []; // Array of criteria IDs in gradingform_rubric_criteria table

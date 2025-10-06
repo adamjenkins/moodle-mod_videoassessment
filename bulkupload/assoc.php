@@ -82,7 +82,7 @@ if (
                 '/' . $userid . '/' . $timing . '/'
             );
             $uservideos = array_filter($uservideos, function (stored_file $file) {
-                return preg_match(videoassessment_base::RE_VIDEOEXT, $file->get_filename());
+                return preg_match('/\.(mp4|mov|avi|webm|ogv|flv|mkv)$/i', $file->get_filename());
             });
             if (!empty($uservideos)) {
                 $user = $DB->get_record('user', array('id' => $userid));

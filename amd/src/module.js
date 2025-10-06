@@ -140,7 +140,7 @@ define(['jquery', 'core/log', 'jqueryui'], function ($, log) {
         videosAssocPanelRefresh() {
             let filter = $('#studentfilter').val() || 'unassociated';
             let html = `
-                <div>${M.str.videoassessment.liststudents} 
+                <div>${M.str.videoassessment.liststudents}
                     <select id="studentfilter">
                         <option value="unassociated">${M.str.videoassessment.unassociated}</option>
                         <option value="associated">${M.str.videoassessment.associated}</option>
@@ -148,7 +148,7 @@ define(['jquery', 'core/log', 'jqueryui'], function ($, log) {
                     </select>
                 </div>
                 <div>
-                    Before/after:
+                    ${M.str.videoassessment.beforeafter}:
                     <input type="radio" name="timing" id="timingbefore" checked="checked">
                     <label for="timingbefore">${M.str.videoassessment.before}</label>
                     <input type="radio" name="timing" id="timingafter">
@@ -281,7 +281,8 @@ define(['jquery', 'core/log', 'jqueryui'], function ($, log) {
                     return;
                 }
 
-                if (!confirm(M.util.get_string("confirmdeletevideos", "mod_videoassessment", count))) {
+                const deleteMessage = M.str.videoassessment.confirmdeletevideos.replace('{$a}', count);
+                if (!confirm(deleteMessage)) {
                     e.preventDefault();
                 }
             });

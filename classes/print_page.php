@@ -187,11 +187,11 @@ class print_page {
                     foreach ($grades as $gradeitem) {
                         $comment = '<label class="submissioncomment">' . $gradeitem->submissioncomment . '</label>';
                         if ($gradertype == "peer") {
-                            $lable = '<span class="blue box">Peer</span>';
+                            $lable = '<span class="blue box">' . $this->va::str('peer') . '</span>';
                         } else if ($gradertype == "teacher") {
-                            $lable = '<span class="green box">Teacher</span>';
+                            $lable = '<span class="green box">' . $this->va::str('teacher') . '</span>';
                         } else if ($gradertype == "self") {
-                            $lable = '<span class="red box">Self</span>';
+                            $lable = '<span class="red box">' . $this->va::str('self') . '</span>';
                         }
                         $o .= $OUTPUT->heading($lable . $comment);
                     }
@@ -208,19 +208,25 @@ class print_page {
                 if ($timinggrades) {
                     $totalscore = ' ='
                         . \html_writer::start_tag('div', array('class' => 'comment-grade'))
-                        . '<span class="comment-score-text">Total    Score</span><span class="comment-score">'
+                        . '<span class="comment-score-text">'
+                        . $this->va::str('totalscore')
+                        . '</span><span class="comment-score">'
                         . (int) $usergrades->{'grade' . $timing}
                         . '</span>'
                         . \html_writer::end_tag('div');
                     $fairnessbonus = '<span  class="fairness">+</span> '
                         . \html_writer::start_tag('div', array('class' => 'comment-grade fairness'))
-                        . '<span class="comment-score-text" >+Fairness Bonus</span><span class="comment-score">'
+                        . '<span class="comment-score-text" >'
+                        . '+' . $this->va::str('fairnessbonus')
+                        . '</span><span class="comment-score">'
                         . (int) $usergrades->fairnessbonus
                         . '</span>'
                         . \html_writer::end_tag('div');
                     $finalscore = ' = '
                         . \html_writer::start_tag('div', array('class' => 'comment-grade'))
-                        . '<span class="comment-score-text">Final    Score</span><span class="comment-score">'
+                        . '<span class="comment-score-text">'
+                        . $this->va::str('finalscore')
+                        . '</span><span class="comment-score">'
                         . (int) $usergrades->finalscore
                         . '</span>'
                         . \html_writer::end_tag('div');

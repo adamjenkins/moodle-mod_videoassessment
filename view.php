@@ -132,7 +132,7 @@ if (optional_param('ajax', null, PARAM_ALPHANUM)) {
         $o .= \html_writer::end_tag('div');
 
         echo json_encode([
-            'html' => $html,
+            'html' => $o,
         ]);
         die;
     }

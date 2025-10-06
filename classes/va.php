@@ -175,7 +175,7 @@ class va {
         $this->instance = $cm->instance;
 
         if (!($this->va = $DB->get_record('videoassessment', array('id' => $cm->instance)))) {
-            throw new \moodle_exception('videoassessmentnotfound');
+            throw new \moodle_exception('videoassessmentnotfound', self::VA);
         }
 
         $this->output = $PAGE->get_renderer('mod_videoassessment');
@@ -436,7 +436,7 @@ class va {
                     }
                 } else {
                     if (empty($data->timing) || !in_array($data->timing, array('before', 'after'))) {
-                        throw new \moodle_exception('invaliddata', self::VA);
+                        throw new \moodle_exception('invaliddata');
                     }
                     $this->associate_video($USER->id, $data->timing, $videoid);
                     $this->emailtostudent($this->cm->instance, $data->timing);
@@ -465,7 +465,7 @@ class va {
                         }
                     } else {
                         if (empty($data->timing) || !in_array($data->timing, array('before', 'after'))) {
-                            throw new \moodle_exception('invaliddata', self::VA);
+                            throw new \moodle_exception('invaliddata');
                         }
                         $this->associate_video($USER->id, $data->timing, $videoid);
                         $this->emailtostudent($this->cm->instance, $data->timing);
@@ -477,7 +477,7 @@ class va {
                 } else {
                     if (!empty($data->mobile)) {
                         if (empty($_FILES['mobilevideo'])) {
-                            print_error('erroruploadvideo', self::VA);
+                            throw new \moodle_exception('erroruploadvideo', self::VA);
                         }
                         $upload->create_temp_dirs();
                         $tmpname = $upload->get_temp_name($_FILES['mobilevideo']['name']);
@@ -500,7 +500,7 @@ class va {
                             }
                         } else {
                             if (empty($data->timing) || !in_array($data->timing, array('before', 'after'))) {
-                                throw new \moodle_exception('invaliddata', self::VA);
+                                throw new \moodle_exception('invaliddata');
                             }
                             $this->associate_video($USER->id, $data->timing, $videoid);
                             $this->emailtostudent($this->cm->instance, $data->timing);
@@ -535,7 +535,7 @@ class va {
                                 }
                             } else {
                                 if (empty($data->timing) || !in_array($data->timing, array('before', 'after'))) {
-                                    throw new \moodle_exception('invaliddata', self::VA);
+                                    throw new \moodle_exception('invaliddata');
                                 }
                                 $this->associate_video($USER->id, $data->timing, $videoid);
                                 $this->emailtostudent($this->cm->instance, $data->timing);
@@ -1423,7 +1423,7 @@ class va {
             );
             $o .= $OUTPUT->box_end();
         }
-        $o .= $this->output->render_videoassess_info_status($this->va);
+        $o .= $this->output->render_mod_videoassessment_info_status($this->va);
 
         return $o;
     }
@@ -1870,7 +1870,7 @@ class va {
             if ($agg->passtraining) {
                 $o .= get_string(
                     'passednotice',
-                    'videoassessment',
+                    self::VA,
                     '<a class="button-notice" href="' .new \moodle_url('/mod/videoassessment/view.php',
                     array('id' => $this->cm->id)) . '">' . self::str('selfpeer') . '</a>',
                 );
@@ -1881,7 +1881,7 @@ class va {
                     . new \moodle_url('/mod/videoassessment/view.php', array('id' => $this->cm->id, 'action' => 'assess', 'userid' => $user->id, 'gradertype' => 'training'))
                     . '">' . self::str('tryagain') . '</a>';
 
-                $o .= get_string('failednotice', 'videoassessment', $a);
+                $o .= self::str('failednotice', $a);
             }
         }
 
@@ -2015,25 +2015,33 @@ class va {
             if ($timinggrades || $rubrictextclass > 0) {
                 $totalscore = ' ='
                     . \html_writer::start_tag('div', array('class' => 'comment-grade'))
-                    . '<span class="comment-score-text">Total    Score</span><span class="comment-score">'
+                    . '<span class="comment-score-text">'
+                    . self::str('totalscore')
+                    . '</span><span class="comment-score">'
                     . (int) $usergrades->{'grade' . $timing}
                     . '</span>'
                     . \html_writer::end_tag('div');
                 $selffairnessbonus = '<span  class="fairness">+</span> '
                     . \html_writer::start_tag('div', array('class' => 'comment-grade fairness'))
-                    . '<span class="comment-score-text" >+Self Fairness Bonus</span><span class="comment-score">'
+                    . '<span class="comment-score-text" >'
+                    . '+' . self::str('selffairnessbonus')
+                    . '</span><span class="comment-score">'
                     . (int) $usergrades->selffairnessbonus
                     . '</span>'
                     . \html_writer::end_tag('div');
                 $fairnessbonus = '<span  class="fairness">+</span> '
                     . \html_writer::start_tag('div', array('class' => 'comment-grade fairness'))
-                    . '<span class="comment-score-text" >+Peer Fairness Bonus</span><span class="comment-score">'
+                    . '<span class="comment-score-text" >'
+                    . '+' . self::str('peerfairnessbonus')
+                    . '</span><span class="comment-score">'
                     . (int) $usergrades->fairnessbonus
                     . '</span>'
                     . \html_writer::end_tag('div');
                 $finalscore = ' = '
                     . \html_writer::start_tag('div', array('class' => 'comment-grade'))
-                    . '<span class="comment-score-text">Final    Score</span><span class="comment-score">'
+                    . '<span class="comment-score-text">'
+                    . self::str('finalscore')
+                    . '</span><span class="comment-score">'
                     . (int) $usergrades->finalscore . '</span>'
                     . \html_writer::end_tag('div');
                 $o .= $OUTPUT->container(get_string('grade') . ': ' . implode(', ', $timinggrades) . $totalscore . $selffairnessbonus . $fairnessbonus . $finalscore, 'finalgrade');
@@ -2745,7 +2753,7 @@ class va {
             $video->height = $height;
             $o .= $this->output->render($video);
         } else {
-            $o .= \html_writer::tag('p', 'Video not found.', array('style' => 'color:#fff'));
+            $o .= \html_writer::tag('p', self::str('videonotfound'), array('style' => 'color:#fff'));
         }
         $o .= $OUTPUT->footer();
 
@@ -2836,14 +2844,16 @@ class va {
         $fixedcolumns = 7;
 
         $rubric = new rubric($this);
-        $headercriteria = array();
+        $headercriteria = [];
         foreach ($this->gradingareas as $gradingarea) {
-            $controller = $rubric->get_controller($gradingarea);
-            $definition = $controller->get_definition();
-            if (isset($definition->rubric_criteria)) {
-                foreach ($definition->rubric_criteria as $criterion) {
-                    if (!in_array($criterion['description'], $headercriteria)) {
-                        $headercriteria[] = $criterion['description'];
+            $controller = $rubric->get_available_controller($gradingarea);
+            if ($controller) {
+                $definition = $controller->get_definition();
+                if (isset($definition->rubric_criteria)) {
+                    foreach ($definition->rubric_criteria as $criterion) {
+                        if (!in_array($criterion['description'], $headercriteria)) {
+                            $headercriteria[] = $criterion['description'];
+                        }
                     }
                 }
             }
@@ -2886,7 +2896,7 @@ class va {
 
             foreach ($this->gradingareas as $gradingarea) {
                 $gradeitems = $this->get_grade_items($gradingarea, $user->id);
-                if ($controller = $rubric->get_controller($gradingarea) && $controller->is_form_available()) {
+                if ($controller = $rubric->get_available_controller($gradingarea)) {
                     foreach ($gradeitems as $gradeitem) {
                         $table->set($row, 0, $user->idnumber);
                         $table->set($row, 1, $fullname);
@@ -3266,7 +3276,7 @@ class va {
      * @param string|null $order Raw ORDER BY fragment when needed
      * @return int[] Ordered list of peer user ids
      */
-    public function get_peers_sort($groupid = 0, $userid, $sortmanually = false, $order = null) {
+    public function get_peers_sort($userid, $groupid = 0, $sortmanually = false, $order = null) {
         global $DB;
 
         $contextcourse = \context_course::instance($this->course->id);
