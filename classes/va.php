@@ -202,6 +202,7 @@ class va {
             'class',
             'reallyresetallpeers',
             'reallydeletevideo',
+            'comment',
         ), 'videoassessment');
 
         $PAGE->requires->strings_for_js(array('all'), 'moodle');
@@ -278,6 +279,7 @@ class va {
         }
 
         if ($action == 'assess' || $action == 'trainingresult') {
+            $PAGE->set_pagelayout('report');
             $PAGE->blocks->show_only_fake_blocks();
             $PAGE->requires->css('/mod/videoassessment/assess.css');
             $PAGE->add_body_class('assess-page');
@@ -590,7 +592,7 @@ class va {
         $o .= groups_print_activity_menu($this->cm, $url, true);
 
         $o .= \html_writer::start_tag('div', array('class' => 'right'))
-            . self::str('assignpeersrandomly')
+            . self::str('assignpeerassessorsrandomly')
             . ': ' . $this->output->action_link(
                     $this->get_view_url('randompeer', array('peermode' => 'course', 'sesskey' => sesskey())),
                     self::str('course'),
@@ -626,6 +628,7 @@ class va {
         $table->define_headers($headers);
         $table->setup();
 
+        // Get students only (excluding teachers) for both table rows and dropdown options.
         $allusers = $this->get_students(null, 0);
         $users = $this->get_students();
 
@@ -641,13 +644,16 @@ class va {
             $peernames = array();
             foreach ($peers as $peer) {
                 $this->viewurl->params(array('action' => 'peerdel', 'userid' => $user->id, 'peerid' => $peer, 'sesskey' => sesskey()));
-                @$peernames[] = fullname($allusers[$peer]) . ' ' . $OUTPUT->action_icon($this->viewurl, $delicon);
+                // Look up peer name from allusers (includes teachers).
+                $peername = isset($allusers[$peer]) ? fullname($allusers[$peer]) : 'User ' . $peer;
+                @$peernames[] = $peername . ' ' . $OUTPUT->action_icon($this->viewurl, $delicon);
             }
             \core_collator::asort($peernames);
             $peercell = implode(\html_writer::empty_tag('br'), $peernames);
 
+            // Include ALL users (including teachers) in dropdown options.
             $opts = array();
-            foreach ($users as $candidate) {
+            foreach ($allusers as $candidate) {
                 if ($candidate->id != $user->id && !in_array($candidate->id, $peers)) {
                     $opts[$candidate->id] = fullname($candidate);
                 }
@@ -828,7 +834,8 @@ class va {
 
         $thumbsize = self::get_thumbnail_size();
 
-        $users = $this->get_students(\user_picture::fields('u'), 0);
+        $userfields = \core_user\fields::for_userpic()->get_sql('u', false, '', '', false)->selects;
+        $users = $this->get_students($userfields, 0);
         array_walk($users, function (\stdClass $a) {
             global $OUTPUT;
             $a->fullname = fullname($a);
@@ -1230,9 +1237,52 @@ class va {
             $groupids = array(0);
         }
 
+        // Always filter out teachers for both course-wide and group assignments.
+        $coursecontext = \context_course::instance($this->course->id);
+        
+        // Get the student role ID.
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], 'id');
+        if (!$studentrole) {
+            return; // No student role found, cannot proceed.
+        }
+
+        // Get role IDs for non-student roles (teacher, editingteacher, manager).
+        $excluderoles = $DB->get_records_select('role',
+            "shortname IN ('teacher', 'editingteacher', 'manager', 'coursecreator')",
+            null, '', 'id');
+        $excluderoleids = array_keys($excluderoles);
+
         foreach ($groupids as $groupid) {
+            // Always filter teachers: use get_enrolled_users with capability check, then filter by role.
             $users = get_enrolled_users($this->context, 'mod/videoassessment:submit', $groupid, 'u.id');
-            $userids = array_keys($users);
+            
+            // Filter out teachers for both course-wide and group assignments.
+            $userids = array();
+            foreach ($users as $user) {
+                // Check if user has student role.
+                $hasstudentrole = user_has_role_assignment($user->id, $studentrole->id, $coursecontext->id);
+                
+                // Check if user has any excluded role.
+                $hasexcludedrole = false;
+                if (!empty($excluderoleids)) {
+                    foreach ($excluderoleids as $roleid) {
+                        if (user_has_role_assignment($user->id, $roleid, $coursecontext->id)) {
+                            $hasexcludedrole = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Only include users with student role and without excluded roles.
+                if ($hasstudentrole && !$hasexcludedrole) {
+                    $userids[] = $user->id;
+                }
+            }
+            
+            // Skip if no users found.
+            if (empty($userids)) {
+                continue;
+            }
 
             $mappings = $this->get_random_peers_for_users($userids, $this->va->usedpeers);
 
@@ -1441,6 +1491,96 @@ class va {
 
         $PAGE->requires->js_call_amd('mod_videoassessment/module', 'mainInit', array($this->cm->id));
         $PAGE->requires->js_call_amd('mod_videoassessment/module', 'assessInit');
+        
+        // Add inline script with immediate functionality for remark textarea hide/show
+        $PAGE->requires->js_amd_inline("
+            require(['jquery'], function(\$) {
+                console.log('[VideoAssessment] Inline script loaded');
+                
+                // Mobile detection function
+                function isMobile() {
+                    var width = window.innerWidth;
+                    var height = window.innerHeight;
+                    var isPortrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+                    if (!isPortrait && width <= 768) {
+                        isPortrait = height > width || height >= width * 0.8;
+                    }
+                    return width <= 768 && isPortrait;
+                }
+                
+                // Get video container
+                function getVideoContainer() {
+                    return \$('.assess-form-videos, .path-mod-videoassessment .assess-form-videos');
+                }
+                
+                // Hide/show video functions with animation
+                function hideVideo() {
+                    if (isMobile()) {
+                        var \$container = getVideoContainer();
+                        console.log('[VideoAssessment] Hiding video, containers found:', \$container.length);
+                        if (\$container.length > 0) {
+                            \$container.fadeOut(300);
+                        }
+                    }
+                }
+                
+                function showVideo() {
+                    if (isMobile()) {
+                        var \$container = getVideoContainer();
+                        if (\$container.length > 0) {
+                            \$container.fadeIn(300);
+                        }
+                    }
+                }
+                
+                // Setup handlers for remark textareas
+                // Mobile: Hide video when textarea is focused, show when blurred.
+                function setupRemarkHandlers() {
+                    console.log('[VideoAssessment] Setting up remark handlers...');
+                    
+                    // Find remark textareas
+                    var \$remarkTextareas = \$('.remark textarea, td.remark textarea, .criterion .remark textarea, .gradingform_rubric .remark textarea');
+                    console.log('[VideoAssessment] Found remark textareas:', \$remarkTextareas.length);
+                    
+                    // Handle focus/blur
+                    \$remarkTextareas.off('focus.videoassessment-remark blur.videoassessment-remark')
+                        .on('focus.videoassessment-remark', function() {
+                            console.log('[VideoAssessment] Remark textarea focused!');
+                            hideVideo();
+                        })
+                        .on('blur.videoassessment-remark', function() {
+                            setTimeout(function() {
+                                var \$focused = \$('.remark textarea:focus, td.remark textarea:focus');
+                                if (\$focused.length === 0) {
+                                    console.log('[VideoAssessment] Remark textarea blurred, showing video');
+                                    showVideo();
+                                }
+                            }, 150);
+                        });
+                    
+                    // Catch-all click handler
+                    \$(document).off('click.videoassessment-remark-all').on('click.videoassessment-remark-all', function(e) {
+                        var \$target = \$(e.target);
+                        var isRemark = \$target.closest('.remark').length > 0 || 
+                                       \$target.is('.remark') ||
+                                       \$target.closest('.remark textarea').length > 0 ||
+                                       \$target.is('.remark textarea');
+                        
+                        if (isRemark && isMobile()) {
+                            console.log('[VideoAssessment] Clicked in remark area');
+                            hideVideo();
+                        }
+                    });
+                }
+                
+                // Setup immediately and after delays
+                setTimeout(setupRemarkHandlers, 100);
+                setTimeout(setupRemarkHandlers, 500);
+                setTimeout(setupRemarkHandlers, 1500);
+                setTimeout(setupRemarkHandlers, 3000);
+            });
+        ");
+        
         $PAGE->requires->js_call_amd('mod_videoassessment/assess', 'videoassessmentAssess', array());
         $o = '';
 
@@ -1548,23 +1688,106 @@ class va {
         if ($this->get_associated_video($user->id, 'after')) {
             $gradingareas[] = 'after' . $gradertype;
         }
+        
+        // Auto-duplicate rubric if teacher has one but this grader type doesn't.
+        // This ensures peers can always see the rubric.
+        videoassessment_auto_duplicate_rubric($this->context->id);
+        
         $rubric = new rubric($this, $gradingareas);
 
         foreach ($this->timings as $timing) {
             $gradingarea = $timing . $gradertype;
             $itemid = null;
-            $itemid = $this->get_grade_item($gradingarea, $user->id);
-            if ($controller = $rubric->get_available_controller($gradingarea)) {
-
+            // Use the correct grader for get_grade_item based on gradertype.
+            $graderforitem = ($gradertype == 'self') ? $user->id : $USER->id;
+            $itemid = $this->get_grade_item($gradingarea, $user->id, $graderforitem);
+            
+            // Try to get the controller - this will auto-duplicate if needed.
+            $controller = $rubric->get_available_controller($gradingarea);
+            
+            // If controller still not available, try one more time after ensuring duplication.
+            if (!$controller) {
+                // Force duplication check again.
+                videoassessment_auto_duplicate_rubric($this->context->id);
+                
+                // Reload the rubric object to pick up newly duplicated rubrics.
+                $rubric = new rubric($this, $gradingareas);
+                
+                // Try again to get the controller.
+                $controller = $rubric->get_available_controller($gradingarea);
+            }
+            
+            if ($controller) {
                 $instanceid = optional_param('advancedgradinginstanceid', 0, PARAM_INT);
                 if (!isset($mformdata->advancedgradinginstance)) {
                     $mformdata->advancedgradinginstance = new \stdClass();
                 }
+                // Use the correct raterid for get_or_create_instance based on gradertype.
+                $rateridforinstance = ($gradertype == 'self') ? $user->id : $USER->id;
+                
+                // If instanceid is 0, try to get existing instance first to load saved data
+                if ($instanceid == 0 && $itemid) {
+                    $existinginstance = $controller->get_current_instance($rateridforinstance, $itemid);
+                    if ($existinginstance) {
+                        $instanceid = $existinginstance->get_id();
+                    }
+                }
+                
                 $mformdata->advancedgradinginstance->$timing = $controller->get_or_create_instance(
                     $instanceid,
-                    $USER->id,
+                    $rateridforinstance,
                     $itemid
                 );
+            } else {
+                // Controller not available - check if we should have one.
+                // If a rubric definition exists but controller wasn't found, there's a configuration issue.
+                $manager = get_grading_manager($this->context, 'mod_videoassessment', $gradingarea);
+                $hasdefinition = false;
+                try {
+                    $testcontroller = $manager->get_controller('rubric');
+                    if ($testcontroller && $testcontroller->is_form_defined()) {
+                        $hasdefinition = true;
+                        // Definition exists but wasn't available - try to set active method and reload.
+                        if (!$manager->get_active_method()) {
+                            $manager->set_active_method('rubric');
+                            // Reload rubric object to pick up the change.
+                            $rubric = new rubric($this, $gradingareas);
+                            $controller = $rubric->get_available_controller($gradingarea);
+                            if ($controller) {
+                                $instanceid = optional_param('advancedgradinginstanceid', 0, PARAM_INT);
+                                if (!isset($mformdata->advancedgradinginstance)) {
+                                    $mformdata->advancedgradinginstance = new \stdClass();
+                                }
+                                // Use the correct raterid for get_or_create_instance based on gradertype.
+                                $rateridforinstance = ($gradertype == 'self') ? $user->id : $USER->id;
+                                $mformdata->advancedgradinginstance->$timing = $controller->get_or_create_instance(
+                                    $instanceid,
+                                    $rateridforinstance,
+                                    $itemid
+                                );
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    // No rubric available.
+                }
+                
+                if (!$hasdefinition) {
+                    // Debug: Log why controller is not available with more details.
+                    $manager = get_grading_manager($this->context, 'mod_videoassessment', $gradingarea);
+                    $activemethod = $manager->get_active_method();
+                    $hasdefinitiondetail = false;
+                    try {
+                        $testcontroller = $manager->get_controller('rubric');
+                        if ($testcontroller) {
+                            $hasdefinitiondetail = $testcontroller->is_form_defined();
+                            $isavailable = $testcontroller->is_form_available();
+                            debugging("Rubric controller not available for grading area: {$gradingarea}, gradertype: {$gradertype}. Active method: " . ($activemethod ?: 'NULL') . ", Definition exists: " . ($hasdefinitiondetail ? 'YES' : 'NO') . ", Is available: " . ($isavailable ? 'YES' : 'NO'), DEBUG_NORMAL);
+                        }
+                    } catch (Exception $e) {
+                        debugging("Rubric controller not available for grading area: {$gradingarea}, gradertype: {$gradertype}. Active method: " . ($activemethod ?: 'NULL') . ", Error: " . $e->getMessage(), DEBUG_NORMAL);
+                    }
+                }
             }
 
             $mformdata->{'grade' . $timing} = $DB->get_record(
@@ -1575,6 +1798,11 @@ class va {
             );
         }
 
+        // Ensure advancedgradinginstance is set even if empty, so form knows to check for rubrics.
+        if (!isset($mformdata->advancedgradinginstance)) {
+            $mformdata->advancedgradinginstance = new \stdClass();
+        }
+        
         $form = new form\assess('', $mformdata, 'post', '', array(
             'class' => 'gradingform',
         ));
@@ -1582,20 +1810,22 @@ class va {
         if ($form->is_cancelled()) {
             $this->view_redirect();
         } else if ($data = $form->get_data($gradertype)) {
-            $gradinginstance = $form->use_advanced_grading();
-            foreach ($this->timings as $timing) {
-                if (!empty($gradinginstance->$timing)) {
-                    $gradingarea = $timing . $this->get_grader_type($data->userid, $gradertype);
-                    $_POST['xgrade' . $timing] = $gradinginstance->$timing->submit_and_get_grade(
-                        $data->{'advancedgrading' . $timing},
-                        $this->get_grade_item($gradingarea, $data->userid)
-                    );
-                }
-            }
+            // The form's get_data() method already calls submit_and_get_grade() for advanced grading
+            // and sets $data->{'xgrade'.$timing}, so we don't need to call it again here.
             $gradertype = $this->get_grader_type($data->userid, $gradertype);
+            
+            // Determine notify student value and save teacher's preference for subsequent gradings.
+            $notifystudent = empty($data->isnotifystudent) ? 0 : $data->isnotifystudent;
+            global $USER;
+            if ($gradertype == 'teacher') {
+                set_user_preference('videoassessment_notify_student_default', $notifystudent);
+            }
+            
             foreach ($this->timings as $timing) {
                 $gradingarea = $timing . $gradertype;
-                $itemid = $this->get_grade_item($gradingarea, $data->userid);
+                // Use the correct grader for get_grade_item based on gradertype.
+                $graderforitem = ($gradertype == 'self') ? $data->userid : $USER->id;
+                $itemid = $this->get_grade_item($gradingarea, $data->userid, $graderforitem);
 
                 if (
                     !($grade = $DB->get_record(
@@ -1610,16 +1840,60 @@ class va {
                     $grade->gradeitem = $itemid;
                     $grade->id = $DB->insert_record('videoassessment_grades', $grade);
                 }
-                if (empty($data->isnotifystudent)) {
-                    $grade->isnotifystudent = 0;
-                } else {
-                    $grade->isnotifystudent = $data->isnotifystudent;
-                }
+                $grade->isnotifystudent = $notifystudent;
 
-                $grade->grade = $data->{'xgrade' . $timing};
+                // Use the grade from the form data, default to -1 if not set.
+                $grade->grade = $data->{'xgrade' . $timing} ?? -1;
+                
+                // If grade is still -1, try to get it from the grading instance.
+                if ($grade->grade == -1) {
+                    $gradingarea = $timing . $gradertype;
+                    $rubric = new rubric($this, array($gradingarea));
+                    $controller = $rubric->get_available_controller($gradingarea);
+                    if ($controller) {
+                        $instance = $controller->get_current_instance($graderforitem, $itemid);
+                        if ($instance && $instance->get_status() == \gradingform_instance::INSTANCE_STATUS_ACTIVE) {
+                            $instancegrade = $instance->get_grade();
+                            if ($instancegrade !== null && $instancegrade >= 0) {
+                                $grade->grade = $instancegrade;
+                            }
+                        }
+                    }
+                }
                 if (isset($data->{'submissioncomment' . $timing})) {
-                    $grade->submissioncomment = $data->{'submissioncomment' . $timing}['text'];
-                    $grade->submissioncommentformat = $data->{'submissioncomment' . $timing}['format'];
+                    $editorvalue = $data->{'submissioncomment' . $timing};
+                    
+                    // Get maxbytes setting.
+                    global $CFG;
+                    $maxbytes = get_user_max_upload_file_size($this->context, $CFG->maxbytes, $this->course->maxbytes);
+                    
+                    // Editor options for file handling.
+                    $editoroptions = array(
+                        'maxfiles' => EDITOR_UNLIMITED_FILES,
+                        'maxbytes' => $maxbytes,
+                        'noclean' => true,
+                        'context' => $this->context,
+                        'subdirs' => true,
+                    );
+                    
+                    // Prepare object for file_postupdate_standard_editor.
+                    // It expects an object with 'text' property and 'text_editor' property containing the editor data.
+                    $editorobj = new \stdClass();
+                    $editorobj->text = isset($editorvalue['text']) ? $editorvalue['text'] : '';
+                    $editorobj->text_editor = $editorvalue; // The editor data array.
+                    
+                    $editorobj = file_postupdate_standard_editor(
+                        $editorobj,
+                        'text',
+                        $editoroptions,
+                        $this->context,
+                        'mod_videoassessment',
+                        'submissioncomment',
+                        $grade->id
+                    );
+                    
+                    $grade->submissioncomment = $editorobj->text;
+                    $grade->submissioncommentformat = isset($editorobj->textformat) ? $editorobj->textformat : FORMAT_HTML;
                 }
                 $grade->timemarked = time();
                 $DB->update_record('videoassessment_grades', $grade);
@@ -1959,7 +2233,29 @@ class va {
                         }
                         $o .= $tmp;
 
-                        $timinggrades[] = \html_writer::tag('span', (int) $gradeitem->grade, array('class' => 'rubrictext-' . $gradertype));
+                        // If grade is -1 or not set, try to get it from the grading instance.
+                        $displaygrade = $gradeitem->grade;
+                        if ($displaygrade == -1 || $displaygrade === null) {
+                            // Try to get the grade from the active grading instance.
+                            $instance = $controller->get_current_instance($gradeitem->grader, $gradeitem->id);
+                            if ($instance && $instance->get_status() == \gradingform_instance::INSTANCE_STATUS_ACTIVE) {
+                                $instancegrade = $instance->get_grade();
+                                if ($instancegrade !== null && $instancegrade >= 0) {
+                                    $displaygrade = $instancegrade;
+                                    // Update the grade in the database for future reference.
+                                    global $DB;
+                                    if ($gradeitem->gradeid) {
+                                        $updategrade = $DB->get_record('videoassessment_grades', array('id' => $gradeitem->gradeid));
+                                        if ($updategrade) {
+                                            $updategrade->grade = $displaygrade;
+                                            $DB->update_record('videoassessment_grades', $updategrade);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        $timinggrades[] = \html_writer::tag('span', (int) $displaygrade, array('class' => 'rubrictext-' . $gradertype));
                     }
                 }
                 $o .= \html_writer::end_tag('div');
@@ -1981,16 +2277,36 @@ class va {
                     if (empty($gradeitem->submissioncomment)) {
                         break;
                     }
-                    $comment = '<label class="submissioncomment">' . $gradeitem->submissioncomment . '</label>';
+                    // Format the comment to convert @@PLUGINFILE@@ placeholders to actual URLs.
+                    $commentformat = isset($gradeitem->submissioncommentformat) ? $gradeitem->submissioncommentformat : FORMAT_HTML;
+                    // First rewrite @@PLUGINFILE@@ placeholders to actual URLs.
+                    // Use gradeid (from videoassessment_grades table) not gradeitem->id (from grade_items table).
+                    $gradeid = isset($gradeitem->gradeid) ? $gradeitem->gradeid : $gradeitem->id;
+                    $commenttext = file_rewrite_pluginfile_urls(
+                        $gradeitem->submissioncomment,
+                        'pluginfile.php',
+                        $this->context->id,
+                        'mod_videoassessment',
+                        'submissioncomment',
+                        $gradeid
+                    );
+                    // Then format the text.
+                    $formattedcomment = format_text($commenttext, $commentformat, [
+                        'context' => $this->context,
+                    ]);
+                    $comment = '<label class="submissioncomment">' . $formattedcomment . '</label>';
                     if ($this->uses_mobile_upload()) {
                         $commentbutton = '';
-                        if (strlen($gradeitem->submissioncomment) > 30) {
-                            $gradeitem->submissioncomment = substr($gradeitem->submissioncomment, 0, 10);
+                        $plaintext = strip_tags($gradeitem->submissioncomment);
+                        if (strlen($plaintext) > 30) {
+                            $shortcomment = substr($plaintext, 0, 10);
                             $commentbutton = "<button type='button' class='commentbutton btn btn-secondary' id = '"
                                 . $gradeitem->id . "' cmid = '" . $this->va->id . "' userid = '" . $userid . "' timing = '" . $timing . "'><h2>...</h2></button>";
+                            $comment = '<label class="mobile-submissioncomment">' . $shortcomment . '</label>';
+                            $comment = $comment . $commentbutton;
+                        } else {
+                            $comment = '<label class="mobile-submissioncomment">' . $formattedcomment . '</label>';
                         }
-                        $comment = '<label class="mobile-submissioncomment">' . $gradeitem->submissioncomment . '</label>';
-                        $comment = $comment . $commentbutton;
                     }
 
                     if ($gradertype == "peer") {
@@ -2044,7 +2360,7 @@ class va {
                     . '</span><span class="comment-score">'
                     . (int) $usergrades->finalscore . '</span>'
                     . \html_writer::end_tag('div');
-                $o .= $OUTPUT->container(get_string('grade') . ': ' . implode(', ', $timinggrades) . $totalscore . $selffairnessbonus . $fairnessbonus . $finalscore, 'finalgrade');
+                $o .= $OUTPUT->container(get_string('grade', 'videoassessment') . ': ' . implode(', ', $timinggrades) . $totalscore . $selffairnessbonus . $fairnessbonus . $finalscore, 'finalgrade');
             }
         }
         $o .= \html_writer::end_tag('div');
@@ -2209,7 +2525,7 @@ class va {
         global $DB;
 
         return $DB->get_records_sql('
-                SELECT gi.id, gi.grader, g.grade, g.submissioncomment, g.timemarked
+                SELECT gi.id, gi.grader, g.id as gradeid, g.grade, g.submissioncomment, g.timemarked
                     FROM {videoassessment_grade_items} gi
                         LEFT JOIN {videoassessment_grades} g ON g.videoassessment = :va2
                             AND g.gradeitem = gi.id
@@ -2237,7 +2553,7 @@ class va {
         global $DB;
 
         return $DB->get_records_sql('
-                SELECT gi.id, gi.grader, g.grade, g.submissioncomment, g.timemarked
+                SELECT gi.id, gi.grader, g.id as gradeid, g.grade, g.submissioncomment, g.timemarked
                     FROM {videoassessment_grade_items} gi
                         LEFT JOIN {videoassessment_grades} g ON g.videoassessment = :va2
                             AND g.gradeitem = gi.id
@@ -2306,6 +2622,20 @@ class va {
                 array('videoassessment' => $this->instance, 'userid' => $userid)
             )
         ) {
+            // Ensure bonus fields exist (they might be missing in older records).
+            if (!isset($grades->selffairnessbonus)) {
+                $grades->selffairnessbonus = 0;
+            }
+            if (!isset($grades->fairnessbonus)) {
+                $grades->fairnessbonus = 0;
+            }
+            if (!isset($grades->finalscore)) {
+                $grades->finalscore = 0;
+            }
+            // Ensure gradebeforeclass exists (it might be missing in older records).
+            if (!isset($grades->gradebeforeclass)) {
+                $grades->gradebeforeclass = -1;
+            }
             return $grades;
         }
 
@@ -2318,6 +2648,7 @@ class va {
             'gradebeforeteacher' => -1,
             'gradebeforeself' => -1,
             'gradebeforepeer' => -1,
+            'gradebeforeclass' => -1,
             'gradeafterteacher' => -1,
             'gradeafterself' => -1,
             'gradeafterpeer' => -1,
@@ -2617,91 +2948,106 @@ class va {
      * Generate random peer mappings for a set of users.
      *
      * @param int[] $userids List of user ids
-     * @param int $numpeers Number of peers per user
+     * @param int $numpeers Number of peers per user (-1 for unlimited/all other users)
      * @return array Mapping: userid => int[] peer ids
      */
     public function get_random_peers_for_users(array $userids, $numpeers) {
-        $maxretry = 3; // Maximum retry count to avoid a “stuck” state.
-
         assert(is_numeric($numpeers));
-        assert(count($userids) > $numpeers);
-
-        $inner = function ($userids, $numpeers) {
-            $peers = array_combine(
-                $userids,
-                array_fill(0, count($userids), array())
-            );
-
-            for ($p = 0; $p < $numpeers; $p++) {
-                $slots = array_values($userids);
-                $pieces = array_values($userids);
-
-                foreach ($userids as $userid) {
-
-                    $slotavailpieces = array_map(function ($slot) use (&$pieces, &$peers) {
-                        return (object) array(
-                            'slot' => $slot,
-                            'pieces' => array_values(array_filter($pieces, function ($piece) use ($slot, &$peers) {
-                                return $piece != $slot && !in_array($piece, $peers[$slot]);
-                            })),
-                        );
-                    }, $slots);
-                    uasort($slotavailpieces, function ($a, $b) {
-                        return count($a->pieces) - count($b->pieces);
-                    });
-
-                    $pieceavailslots = array_map(function ($piece) use (&$slots, &$peers) {
-                        return (object) array(
-                            'piece' => $piece,
-                            'slots' => array_values(array_filter($slots, function ($slot) use ($piece, &$peers) {
-                                return $slot != $piece && !in_array($piece, $peers[$slot]);
-                            })),
-                        );
-                    }, $pieces);
-                    uasort($pieceavailslots, function ($a, $b) {
-                        return count($a->slots) - count($b->slots);
-                    });
-
-                    $minslotpieces = reset($slotavailpieces);
-                    $minpieceslots = reset($pieceavailslots);
-                    if (empty($minslotpieces->pieces) || empty($minpieceslots->slots)) {
-                        throw new Exception();
-                    }
-
-                    if (count($minslotpieces->pieces) < count($minpieceslots->slots)) {
-                        $slot = $minslotpieces->slot;
-                        $piece = $minslotpieces->pieces[mt_rand(0, count($minslotpieces->pieces) - 1)];
-                    } else {
-                        $slot = $minpieceslots->slots[mt_rand(0, count($minpieceslots->slots) - 1)];
-                        $piece = $minpieceslots->piece;
-                    }
-
-                    assert(in_array($slot, $slots));
-                    assert(in_array($piece, $pieces));
-                    $slots = array_diff($slots, array($slot));
-                    $pieces = array_diff($pieces, array($piece));
-
-                    $peers[$slot][] = $piece;
+        
+        // Initialize peers array for all users.
+        $peers = array();
+        foreach ($userids as $userid) {
+            $peers[$userid] = array();
+        }
+        
+        // Handle unlimited peers case (-1 means all other users).
+        if ($numpeers == -1) {
+            foreach ($userids as $userid) {
+                // Assign all other users as peers.
+                $peers[$userid] = array_values(array_diff($userids, array($userid)));
+            }
+            return $peers;
+        }
+        
+        // Check if we have enough users. Need at least numpeers + 1 users.
+        if (count($userids) <= $numpeers) {
+            // Not enough users - assign as many peers as possible.
+            foreach ($userids as $userid) {
+                $peers[$userid] = array_values(array_diff($userids, array($userid)));
+            }
+            return $peers;
+        }
+        
+        // Simple, reliable algorithm: assign peers round by round.
+        // Shuffle user list for randomness.
+        $shuffled = $userids;
+        shuffle($shuffled);
+        $numusers = count($shuffled);
+        
+        // For each round (peer slot 0 to numpeers-1), assign one peer to each user.
+        for ($round = 0; $round < $numpeers; $round++) {
+            // Create a list of users that still need peers in this round.
+            $usersneedingpeers = array();
+            foreach ($shuffled as $userid) {
+                if (count($peers[$userid]) < $numpeers) {
+                    $usersneedingpeers[] = $userid;
                 }
             }
-
-            return $peers;
-        };
-
-        // When the total number of users and the number of selected peers are close,
-        // a deadlock state may occasionally occur. Retry up to a maximum of $maxretry times.
-        for ($i = 0; $i < $maxretry; $i++) {
-            try {
-                return $inner($userids, $numpeers);
-            } catch (Exception $ex) {
-                continue;
+            
+            // Shuffle the list for randomness.
+            shuffle($usersneedingpeers);
+            
+            // For each user needing a peer, assign one.
+            foreach ($usersneedingpeers as $userid) {
+                // Get all potential peers (all other users).
+                $potentialpeers = array_values(array_diff($shuffled, array($userid)));
+                shuffle($potentialpeers);
+                
+                // Find the first peer that:
+                // 1. Is not the user themselves
+                // 2. Hasn't been assigned to this user yet
+                // 3. This user hasn't been assigned to that peer yet (optional, but better distribution)
+                $assigned = false;
+                foreach ($potentialpeers as $peerid) {
+                    if (!in_array($peerid, $peers[$userid])) {
+                        $peers[$userid][] = $peerid;
+                        $assigned = true;
+                        break;
+                    }
+                }
+                
+                // If we couldn't assign (shouldn't happen), log a warning.
+                if (!$assigned) {
+                    debugging("Could not assign peer to user $userid in round $round. Current peers: " . implode(',', $peers[$userid]), DEBUG_NORMAL);
+                }
             }
         }
-
-        // Failed after exceeding $maxretry attempts.
-        throw new RuntimeException(
-            sprintf('Failed to select random %d peers for %d users', $numpeers, count($userids))
-        );
+        
+        // Final verification: ensure everyone has the required number of peers.
+        // This handles edge cases where the algorithm above didn't assign enough.
+        foreach ($userids as $userid) {
+            while (count($peers[$userid]) < $numpeers) {
+                $found = false;
+                // Get all other users as potential peers.
+                $remaining = array_values(array_diff($userids, array($userid)));
+                shuffle($remaining);
+                
+                foreach ($remaining as $peerid) {
+                    if (!in_array($peerid, $peers[$userid])) {
+                        $peers[$userid][] = $peerid;
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    // Not enough unique users - this shouldn't happen if numpeers < count(userids).
+                    debugging("User $userid only has " . count($peers[$userid]) . " peers but needs $numpeers. Total users: " . count($userids), DEBUG_NORMAL);
+                    break;
+                }
+            }
+        }
+        
+        return $peers;
     }
 
     /**
@@ -3306,8 +3652,11 @@ class va {
             $fields = ', vso.sortorder as sortorder';
         }
 
+        // Use GROUP BY to handle duplicate userids from multiple role assignments or enrolments.
+        // For sortorder, use MIN() to get the first sort order value (or NULL if not set).
+        $groupbyfields = str_replace(', vso.sortorder as sortorder', ', MIN(vso.sortorder) as sortorder', $fields);
         $sql = "
-            SELECT vp.userid $fields
+            SELECT vp.userid $groupbyfields
             FROM {videoassessment_peers} vp
             JOIN {user} u ON vp.userid = u.id
             JOIN {role_assignments} ra ON u.id = ra.userid
@@ -3315,7 +3664,8 @@ class va {
             JOIN {enrol} e ON ue.enrolid = e.id
             $join
             WHERE vp.videoassessment = :videoassessment AND vp.peerid = :peerid AND ra.contextid = :contextid
-        " . $where . $order;
+        " . $where . "
+            GROUP BY vp.userid" . $order;
 
         $students = $DB->get_records_sql($sql, $params);
         $peerids = array();

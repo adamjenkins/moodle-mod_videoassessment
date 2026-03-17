@@ -128,13 +128,27 @@ class assess extends \moodleform {
 
         $grademenu = make_grades_menu($va->va->grade);
         $gradinginstances = $this->use_advanced_grading();
+        
+        // Check if we have any advanced grading instances.
+        // Even if $gradinginstances is set, it might be empty, so check for actual instances.
+        $hasadvancedgrading = false;
+        if ($gradinginstances && is_object($gradinginstances)) {
+            foreach ($va->timings as $timing) {
+                if (!empty($gradinginstances->$timing)) {
+                    $hasadvancedgrading = true;
+                    break;
+                }
+            }
+        }
 
         foreach ($va->timings as $timing) {
 
             if (property_exists($this->_customdata, 'grade' . $timing)) {
                 $grade = $this->_customdata->{'grade' . $timing};
             }
-            if ($gradinginstances) {
+            
+            // Use advanced grading if we have at least one instance.
+            if ($hasadvancedgrading) {
                 // Grade type -rubric.
                 $mform->addElement('hidden', 'gradecategory' . $timing, 1);
                 $mform->setType('gradecategory'.$timing, PARAM_RAW);
@@ -224,28 +238,74 @@ class assess extends \moodleform {
                     \html_writer::tag('span', $gradestr, array('class' => 'mark')));
             $mform->setType('finalgrade'.$timing, PARAM_INT);
 
-            $mform->addElement('editor', 'submissioncomment' . $timing, get_string('feedback', 'videoassessment') . ':',
-                    array('cols' => 50, 'rows' => 8),
-                    array(
-                        'maxfiles' => EDITOR_UNLIMITED_FILES,
-                        'noclean' => true,
-                        'context' => $coursecontext, 'subdirs' => true,
-                    ),
-                );
+            // Get course maxbytes setting for file uploads using Moodle's standard function.
+            global $COURSE, $CFG, $PAGE;
+            $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
 
-            if (isset($grade->submissioncomment)) {
-                $mform->setDefault(
-                    'submissioncomment'. $timing,
-                    array(
-                        'text' => $grade->submissioncomment,
-                        'format' => FORMAT_HTML,
-                    ),
+            // Editor options with file upload support.
+            $editoroptions = array(
+                'maxfiles' => EDITOR_UNLIMITED_FILES,
+                'maxbytes' => $maxbytes,
+                'noclean' => true,
+                'context' => $coursecontext,
+                'subdirs' => true,
+            );
+            
+            $fieldname = 'submissioncomment' . $timing;
+            
+            // Prepare editor data with file support if grade exists.
+            if (isset($grade->submissioncomment) && isset($grade->id)) {
+                $editorvalue = new \stdClass();
+                $editorvalue->text = $grade->submissioncomment;
+                $editorvalue->textformat = isset($grade->submissioncommentformat) && $grade->submissioncommentformat > 0 
+                    ? $grade->submissioncommentformat 
+                    : FORMAT_HTML;
+                
+                // Prepare editor with file area support.
+                // file_prepare_standard_editor uses 'text' as the field name, so it creates 'text_editor' property.
+                $editorvalue = file_prepare_standard_editor(
+                    $editorvalue,
+                    'text',
+                    $editoroptions,
+                    $coursecontext,
+                    'mod_videoassessment',
+                    'submissioncomment',
+                    $grade->id
                 );
+                
+                $mform->addElement('editor', $fieldname, get_string('feedback', 'videoassessment') . ':',
+                        array('cols' => 50, 'rows' => 8),
+                        $editoroptions
+                    );
+                $mform->setType($fieldname, PARAM_RAW);
+                // file_prepare_standard_editor creates 'text_editor' property, not fieldname_editor.
+                $mform->setDefault($fieldname, $editorvalue->text_editor);
+            } else {
+                // New feedback - no file area needed yet.
+                $mform->addElement('editor', $fieldname, get_string('feedback', 'videoassessment') . ':',
+                        array('cols' => 50, 'rows' => 8),
+                        $editoroptions
+                    );
+                $mform->setType($fieldname, PARAM_RAW);
+                if (isset($grade->submissioncomment)) {
+                    $mform->setDefault(
+                        $fieldname,
+                        array(
+                            'text' => $grade->submissioncomment,
+                            'format' => FORMAT_HTML,
+                        ),
+                    );
+                }
             }
             if ($data->gradertype == "teacher" || $data->gradertype == "peer") {
                 $mform->addElement('advcheckbox', "isnotifystudent", "notify student", [], [0, 1]);
             }
-            if (isset($grade->isnotifystudent)) {
+            // Determine default value: check user preference first, then existing grade, then default to 1.
+            global $USER;
+            $defaultnotify = get_user_preferences('videoassessment_notify_student_default', null);
+            if ($defaultnotify !== null) {
+                $mform->setDefault("isnotifystudent", (int)$defaultnotify);
+            } else if (isset($grade->isnotifystudent)) {
                 $mform->setDefault("isnotifystudent", $grade->isnotifystudent);
             } else {
                 $mform->setDefault('isnotifystudent', 1);
@@ -268,6 +328,61 @@ class assess extends \moodleform {
         $cdata = $this->_customdata;
         /* @var $va \mod_videoassessment\va */
         $va = $cdata->va;
+        
+        // Check if advanced grading is being used and validate rubric completeness.
+        // Use the instances that are already set up in the form.
+        $gradinginstances = $this->use_advanced_grading();
+        if ($gradinginstances && is_object($gradinginstances)) {
+            foreach ($va->timings as $timing) {
+                if (!empty($gradinginstances->$timing)) {
+                    $gradinginstance = $gradinginstances->$timing;
+                    
+                    // Check if rubric data was submitted for this timing.
+                    // Try multiple ways to get the grading data - it might be in different formats.
+                    $gradingdata = null;
+                    $fieldname = 'advancedgrading' . $timing;
+                    
+                    // First try from the $data array (from exportValues).
+                    if (isset($data[$fieldname])) {
+                        $gradingdata = $data[$fieldname];
+                    }
+                    
+                    // If not found, try to get it directly from the form element's submit value.
+                    if ($gradingdata === null) {
+                        $element = $this->_form->getElement($fieldname);
+                        if ($element && method_exists($element, 'getSubmitValue')) {
+                            $gradingdata = $element->getSubmitValue();
+                        }
+                    }
+                    
+                    // If still not found, try $_POST directly (as a last resort).
+                    if ($gradingdata === null && isset($_POST[$fieldname])) {
+                        $gradingdata = $_POST[$fieldname];
+                    }
+                    
+                    // Only validate if data was submitted and form is not empty.
+                    // Empty forms are allowed - validation only happens when user tries to submit incomplete data.
+                    if ($gradingdata !== null && is_array($gradingdata) && !$gradinginstance->is_empty_form($gradingdata)) {
+                        // Form has some data - validate that all criteria are graded.
+                        // validate_grading_element returns true if all criteria are properly graded.
+                        $isvalid = $gradinginstance->validate_grading_element($gradingdata);
+                        if (!$isvalid) {
+                            $errorfield = 'advancedgrading' . $timing;
+                            $errormessage = get_string('rubricnotcompleted', 'videoassessment');
+                            $errors[$errorfield] = $errormessage;
+                            // Also set error on the form element directly to ensure it's displayed.
+                            $this->_form->setElementError($errorfield, $errormessage);
+                        }
+                    } else if ($gradingdata !== null && is_array($gradingdata) && $gradinginstance->is_empty_form($gradingdata)) {
+                        // Form is empty - this is allowed, no validation needed.
+                    } else {
+                        // No grading data submitted - this might be an issue, but we'll allow it for now.
+                    }
+                    // If gradingdata is null or form is empty, don't show error - allow empty submission.
+                }
+            }
+        }
+        
         foreach ($va->timings as $timing) {
             if (!empty($data['xgrade'.$timing]) && $va->va->grade > 0) {
                 if (0 > $data['xgrade'.$timing] || $data['xgrade'.$timing] > 100) {
@@ -364,12 +479,32 @@ class assess extends \moodleform {
         }
 
         $gradinginstance = $this->use_advanced_grading();
-        foreach (array('before', 'after') as $timing) {
-            if (!empty($gradinginstance->$timing)) {
-                $gradingarea = $timing.$this->_customdata->va->get_grader_type($data->userid, $gradertype);
-                $data->{'xgrade'.$timing} = $gradinginstance->$timing->submit_and_get_grade(
-                        $data->{'advancedgrading'.$timing},
-                        $this->_customdata->va->get_grade_item($gradingarea, $data->userid)
+        // Use gradertype from form data (submitted hidden field) first, then customdata, then parameter.
+        // This ensures we use the actual gradertype that was submitted with the form.
+        $formgradertype = null;
+        if (isset($data->gradertype) && !empty($data->gradertype)) {
+            $formgradertype = $data->gradertype;
+        } else if (isset($this->_customdata->gradertype) && !empty($this->_customdata->gradertype)) {
+            $formgradertype = $this->_customdata->gradertype;
+        } else if (!empty($gradertype)) {
+            $formgradertype = $gradertype;
+        }
+        
+        // If we still don't have a gradertype, determine it from the user.
+        if (empty($formgradertype)) {
+            $formgradertype = $this->_customdata->va->get_grader_type($data->userid);
+        }
+        
+        // Use the grading instances that were already set up in the form definition
+        $gradinginstances = $this->use_advanced_grading();
+        
+        // Only process timings that actually exist in the form (fix for first assessment grade issue)
+        foreach ($this->_customdata->va->timings as $timing) {
+            if (!empty($gradinginstances) && is_object($gradinginstances) && !empty($gradinginstances->$timing)) {
+                $gradingarea = $timing . $this->_customdata->va->get_grader_type($data->userid, $gradertype);
+                $data->{'xgrade'.$timing} = $gradinginstances->$timing->submit_and_get_grade(
+                    $data->{'advancedgrading'.$timing},
+                    $this->_customdata->va->get_grade_item($gradingarea, $data->userid)
                 );
             }
         }

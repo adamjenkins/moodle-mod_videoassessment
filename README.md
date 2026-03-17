@@ -6,7 +6,7 @@ Requirements
 
 * Moodle 4.0 to 4.3
 * ffmpeg
-* MP4Box
+* MP4Box (Optional - Legacy)
 
 Optional parameter adjustment
 -----------------------------
@@ -67,3 +67,25 @@ Success if the result is as follows:
 +------+---------------------+---------+------------+
 ```
 *The value of [value] column shows "2025040100".
+
+Changelog
+---------
+
+### Version 2025120816 (Build: 2025120816)
+
+**Changes:**
+- Changed default value for "Automatic file deletion at course end date" from "No" to "Yes" in activity settings
+- Improved mobile video behavior: video automatically scrolls back to original position after closing comment textarea
+- Mobile: Video hides when feedback textarea is focused, reappears when blurred with smooth scroll animation
+
+### Version 2025120815 (Build: 2025120815)
+
+**Changes:**
+- Fixed "Grade to pass" field not saving in activity settings
+- Added database upgrade checkpoint for `gradepass` fields
+- Removed CSS rule for `#page-footer` element
+- Enhanced mobile assessment experience with improved video visibility controls
+
+### Previous Versions
+
+For earlier version history, please refer to the upgrade.txt file.

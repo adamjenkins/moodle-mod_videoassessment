@@ -15,9 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of Video Assessment.
+ * Uninstall function for video assessment module.
  *
- * This code fragment is called by moodle_needs_upgrading() and /admin/index.php
+ * This function is called when the module is uninstalled.
+ * It cleans up the default rubric template that was created during installation.
  *
  * @package    mod_videoassessment
  * @copyright  2024 Don Hinkleman (hinkelman@mac.com)
@@ -26,9 +27,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026013000;
-$plugin->requires  = 2011112900;
-$plugin->component = 'mod_videoassessment';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0.5 (Build: 2026013000)'; // User-friendly version number.
-$plugin->supported = [400, 403];
+/**
+ * Uninstall cleanup function for video assessment module.
+ *
+ * @return void
+ */
+function xmldb_videoassessment_uninstall() {
+    // No cleanup needed - default rubric template creation has been removed.
+}
+

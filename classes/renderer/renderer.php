@@ -20,7 +20,7 @@ use plugin_renderer_base;
 use renderable;
 use mod_videoassessment\va;
 use mod_videoassessment\video;
-use filter_mediaplugin;
+use filter_mediaplugin\text_filter;
 use moodle_url;
 use html_table;
 use html_table_row;
@@ -40,6 +40,13 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends plugin_renderer_base {
+    /**
+     * Video assessment instance object.
+     *
+     * @var va|null
+     */
+    public $va = null;
+
     /**
      * Render a renderable object using appropriate method.
      *
@@ -168,7 +175,7 @@ class renderer extends plugin_renderer_base {
         : '';
 
         // Use the video object's context instead of $this->va (which may not exist here).
-        $filter = new filter_mediaplugin($video->context, array());
+        $filter = new \filter_mediaplugin\text_filter($video->context, array());
         if (va::check_mp4_support()) {
             // Browsers supporting the MP4 format use the HTML5 <video> tag.
             $prevfiltermediapluginenablehtml5video = !empty($CFG->filtermediapluginenablehtml5video);

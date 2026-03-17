@@ -1002,5 +1002,111 @@ function xmldb_videoassessment_upgrade($oldversion = 0) {
         }
         upgrade_mod_savepoint(true, 2022080801, 'videoassessment');
     }
+
+    if ($oldversion < 2025120801) {
+        $table = new xmldb_table('videoassessment');
+
+        // Add allowyoutube field (default 1 = enabled).
+        $field = new xmldb_field('allowyoutube', XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, 1);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add allowvideoupload field (default 1 = enabled).
+        $field = new xmldb_field('allowvideoupload', XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, 1);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add allowvideorecord field (default 1 = enabled).
+        $field = new xmldb_field('allowvideorecord', XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, 1);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2025120801, 'videoassessment');
+    }
+
+    if ($oldversion < 2025120802) {
+        $table = new xmldb_table('videoassessment');
+
+        // Add autodeletefiles field (default 0 = disabled).
+        $field = new xmldb_field('autodeletefiles', XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, 0);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2025120802, 'videoassessment');
+    }
+
+    if ($oldversion < 2025120811) {
+        // Always install/reinstall default rubric template on this version upgrade
+        require_once($CFG->dirroot . '/mod/videoassessment/db/install.php');
+        
+        // Delete any existing default template first to ensure fresh installation
+        $systemcontext = \context_system::instance();
+        $existingareas = $DB->get_records_sql(
+            "SELECT ga.id, gd.id as definitionid
+             FROM {grading_areas} ga
+             JOIN {grading_definitions} gd ON gd.areaid = ga.id
+             WHERE ga.contextid = ? 
+             AND ga.component = 'core_grading'
+             AND gd.method = 'rubric'
+             AND gd.name = ?",
+            [$systemcontext->id, get_string('defaultrubrictemplate', 'videoassessment')]
+        );
+        
+        // Delete existing template definitions and all related data
+        foreach ($existingareas as $area) {
+            // Get all criteria IDs for this definition
+            $criteriaids = $DB->get_fieldset_sql(
+                "SELECT id FROM {gradingform_rubric_criteria} WHERE definitionid = ?",
+                [$area->definitionid]
+            );
+            
+            if (!empty($criteriaids)) {
+                // Delete all levels for these criteria
+                list($insql, $inparams) = $DB->get_in_or_equal($criteriaids);
+                $DB->execute("DELETE FROM {gradingform_rubric_levels} WHERE criterionid $insql", $inparams);
+                
+                // Delete all criteria
+                $DB->delete_records('gradingform_rubric_criteria', ['definitionid' => $area->definitionid]);
+            }
+            
+            // Delete all instances first (this will cascade delete fillings)
+            $DB->delete_records('grading_instances', ['definitionid' => $area->definitionid]);
+            
+            // Delete the definition
+            $DB->delete_records('grading_definitions', ['id' => $area->definitionid]);
+            
+            // Delete the area
+            $DB->delete_records('grading_areas', ['id' => $area->id]);
+        }
+        
+        // Now create the default template (will create fresh)
+        create_default_rubric_template();
+
+        upgrade_mod_savepoint(true, 2025120811, 'videoassessment');
+    }
+
+    // Ensure gradepass fields are added (2025120815)
+    if ($oldversion < 2025120815) {
+        $table = new xmldb_table('videoassessment');
+
+        // Add gradepass field if it doesn't exist
+        $field = new xmldb_field('gradepass', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, null, 0);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add gradepass_videoassessment field if it doesn't exist
+        $field = new xmldb_field('gradepass_videoassessment', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, null, 0);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2025120815, 'videoassessment');
+    }
+
     return true;
 }
