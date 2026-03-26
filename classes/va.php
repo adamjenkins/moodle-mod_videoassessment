@@ -1164,7 +1164,7 @@ class va {
     private static function get_thumbnail_size() {
         global $CFG;
 
-        if (preg_match('/(\d+)x(\d+)/', $CFG->videoassessment_ffmpegthumbnailcommand, $m)) {
+        if (preg_match('/(\d+)x(\d+)/', $CFG->videoassessment/ffmpegthumbnailcommand, $m)) {
             $size = new \stdClass();
             $size->width = $m[1];
             $size->height = $m[2];

@@ -39,20 +39,20 @@ if ($ADMIN->fulltree) {
         '.flv'  => '.flv  - Flash Video',
         ];
     $settings->add(
-        new admin_setting_configselect('videoassessment_videoformat',
+        new admin_setting_configselect('videoassessment/videoformat',
             get_string('videoformat', 'videoassessment'),
             get_string('videoformatdesc', 'videoassessment'),
             key($formats), $formats)
         );
 
-    if (!class_exists('admin_setting_configtext_ffmpegcommand')) {
+    if (!class_exists('admin_setting_configexecutable')) {
         /**
          * Custom admin setting for validating ffmpeg command.
          *
          * Validates the ffmpeg command to ensure it contains the required placeholders
          * for input and output file paths.
          */
-        class admin_setting_configtext_ffmpegcommand extends admin_setting_configtext {
+        class admin_setting_configexecutable extends admin_setting_configexecutable {
             /**
              * Validate the ffmpeg command.
              *
@@ -71,21 +71,21 @@ if ($ADMIN->fulltree) {
         }
     }
     $settings->add(
-        new admin_setting_configtext_ffmpegcommand('videoassessment_ffmpegcommand',
+        new admin_setting_configexecutable('videoassessment/ffmpegcommand',
             get_string('ffmpegcommand', 'videoassessment'),
             get_string('ffmpegcommanddesc', 'videoassessment'),
             '/usr/local/bin/ffmpeg -i {INPUT} {OUTPUT}', PARAM_RAW, 60)
         );
 
     $settings->add(
-        new admin_setting_configtext_ffmpegcommand('videoassessment_ffmpegthumbnailcommand',
+        new admin_setting_configexecutable('videoassessment/ffmpegthumbnailcommand',
             get_string('ffmpegthumbnailcommand', 'videoassessment'),
             get_string('ffmpegthumbnailcommanddesc', 'videoassessment'),
             '/usr/local/bin/ffmpeg -i {INPUT} -vframes 1 -s 137x91 -ss 1 {OUTPUT}', PARAM_RAW, 60)
         );
 
     $settings->add(
-        new admin_setting_configtext('videoassessment_mp4boxcommand',
+        new admin_setting_configexecutable('videoassessment/mp4boxcommand',
             get_string('mp4boxcommand', 'videoassessment'),
             get_string('mp4boxcommanddesc', 'videoassessment'),
             '/usr/local/bin/MP4Box', PARAM_RAW, 60)

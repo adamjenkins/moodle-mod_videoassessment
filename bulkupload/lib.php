@@ -205,11 +205,11 @@ class videoassessment_bulkupload {
             $base = pathinfo($name, PATHINFO_FILENAME);
             $path = $this->get_tempdir().'/convert/'.$base;
 
-            $videoformat = $CFG->videoassessment_videoformat;
+            $videoformat = $CFG->videoassessment/videoformat;
             $thumbformat = self::THUMBNAIL_FORMAT;
 
             // Convert video.
-            $command = $CFG->videoassessment_ffmpegcommand;
+            $command = $CFG->videoassessment/ffmpegcommand;
             $command = self::fix_ffmpeg_options($command, $videoformat);
             $cmdline = strtr($command, array(
                 '{INPUT}'  => escapeshellarg($srcpath),
@@ -220,7 +220,7 @@ class videoassessment_bulkupload {
                 throw new Exception("failed to execute: $cmdline");
             }
             // Generate thumbnail.
-            $command = $CFG->videoassessment_ffmpegthumbnailcommand;
+            $command = $CFG->videoassessment/ffmpegthumbnailcommand;
             $command = self::fix_ffmpeg_options($command, $thumbformat);
             $cmdline = strtr($command, array(
                 '{INPUT}'  => escapeshellarg($path.$videoformat),
@@ -232,11 +232,11 @@ class videoassessment_bulkupload {
             }
             // Generate a hint track for progressive playback (MP4 only).
             if ($videoformat == '.mp4' &&
-                !empty($CFG->videoassessment_mp4boxcommand)) {
+                !empty($CFG->videoassessment/mp4boxcommand)) {
                 // Network-mounted directories may fail to rename,
                 // so save as a different name and copy & delete.
                 $cmdline = sprintf('%s -hint %s -out %s >%s 2>&1',
-                    $CFG->videoassessment_mp4boxcommand,
+                    $CFG->videoassessment/mp4boxcommand,
                     escapeshellarg($path . $videoformat),
                     escapeshellarg($path . '.hint.mp4'),
                     escapeshellarg($path . '.box.log'));
